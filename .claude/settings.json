@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /private/tmp/claude-501/-Users-buketyurt-Mimeda-yzta-bootcamp/8af1373d-d23b-47cc-a08d-8ee4eaae0783/scratchpad/docx)",
+      "Bash(cd /private/tmp/claude-501/-Users-buketyurt-Mimeda-yzta-bootcamp/8af1373d-d23b-47cc-a08d-8ee4eaae0783/scratchpad/docx)",
+      "Bash(unzip -o \"/Users/buketyurt/Mimeda/yzta-bootcamp/YZTA Sprint Log.docx\")",
+      "Bash(ls -la word/media/)",
+      "Bash(textutil -convert txt -stdout \"/Users/buketyurt/Mimeda/yzta-bootcamp/YZTA Sprint Log.docx\")",
+      "Bash(python3 -c ' *)",
+      "Bash(mkdir -p /Users/buketyurt/Mimeda/yzta-bootcamp/docs/sprint1)",
+      "Bash(cp /private/tmp/claude-501/-Users-buketyurt-Mimeda-yzta-bootcamp/8af1373d-d23b-47cc-a08d-8ee4eaae0783/scratchpad/docx/word/media/image2.png daily-scrum-2026-06-30.png)",
+      "Bash(cp /private/tmp/claude-501/-Users-buketyurt-Mimeda-yzta-bootcamp/8af1373d-d23b-47cc-a08d-8ee4eaae0783/scratchpad/docx/word/media/image1.png daily-scrum-2026-07-02-1.png)",
+      "Bash(cp /private/tmp/claude-501/-Users-buketyurt-Mimeda-yzta-bootcamp/8af1373d-d23b-47cc-a08d-8ee4eaae0783/scratchpad/docx/word/media/image3.png daily-scrum-2026-07-02-2.png)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null http://localhost:3000/)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --screenshot=product-login.png --window-size=1200,900 --hide-scrollbars http://localhost:3000/login)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --screenshot=product-home.png --window-size=1200,1100 --hide-scrollbars http://localhost:3000/)",
+      "Bash(defaults read *)",
+      "Read(//Users/buketyurt/Library/CloudStorage/OneDrive-MimedaMedyaPlatformA.Ş/Desktop/**)"
+    ]
+  }
+}
