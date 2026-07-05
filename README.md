@@ -73,7 +73,13 @@ bağlantılarla birlikte şeffaf biçimde raporlanır.
 
 - **Sprint board update**: Sprint board ekran görüntüleri:
 
+  Sprint devam ederken:
+
   ![Jira Sprint Board](docs/sprint1/jira-board.jpeg)
+
+  Sprint sonu:
+
+  ![Jira Sprint Board - Sprint Sonu](/docs/sprint1/jira-board-2.png)
 
 - **Ürün Durumu**: Ekran görüntüleri:
 
@@ -85,7 +91,7 @@ bağlantılarla birlikte şeffaf biçimde raporlanır.
 
   ![Ana Sayfa](docs/sprint1/product-home.png)
 
-- **Sprint Review**: Sprint bitiminde güncellenecektir.
+- **Sprint Review**: Sprint sonunda planlanan 11 puanın 8'i tamamlanmıştır. Login Sayfası (SCRUM-2: 2 puan), Arayüz Sayfası (SCRUM-3: 3 puan) ve Web search/grounding API araştırması (SCRUM-4: 3 puan) Done durumuna alınmış; ürünün login sayfası ile ana sayfası (iddia analiz ekranı) çalışır ve demoya hazır duruma getirilmiştir. Mimari tasarım dökümanı (SCRUM-1: 3 puan) sprint içinde tamamlanamamış olup bir sonraki sprint'e devredilmiştir. Bir sonraki sprint planlamasında bu iş; backlog'da bekleyen login ile arayüz sayfasının birleştirilmesi (SCRUM-5), database bağlanması (SCRUM-6) ve web tool'un arayüze entegrasyonu (SCRUM-7) story'leriyle birlikte ele alınacaktır. Sprint Review katılımcıları: Buket Yurt, Sude Özden., Sedef Ülker, Feyza İrem Kart. 
 
 - **Sprint Retrospective**:
   - Daily Scrum'ların WhatsApp üzerinden asenkron yürütülmesinin ekibe uyduğuna ve devam etmesine karar verilmiştir.
