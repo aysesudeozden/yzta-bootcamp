@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent, SVGProps } from "react";
+import { useRouter } from "next/navigation";
 
 function ShieldCheckIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -87,11 +88,43 @@ function GithubIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:8000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.detail ?? "Giriş yapılamadı. Lütfen tekrar deneyin.");
+      }
+
+      const user = await res.json();
+      localStorage.setItem("user", JSON.stringify(user));
+      router.push("/");
+    } catch (err) {
+      setError(
+        err instanceof TypeError
+          ? "Sunucuya ulaşılamadı. Backend'in çalıştığından emin olun."
+          : err instanceof Error
+            ? err.message
+            : "Giriş yapılamadı. Lütfen tekrar deneyin."
+      );
+      setLoading(false);
+    }
   };
 
   return (
@@ -118,6 +151,9 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="ad.soyad@ornek.com"
               className="w-full rounded-lg border border-white/10 bg-[#141414] px-3.5 py-2.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
@@ -134,6 +170,9 @@ export default function LoginPage() {
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Şifrenizi girin"
                 className="w-full rounded-lg border border-white/10 bg-[#141414] px-3.5 py-2.5 pr-10 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
@@ -152,27 +191,25 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex cursor-pointer items-center gap-2 text-gray-300">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={() => setRememberMe((v) => !v)}
-                className="h-4 w-4 rounded border-white/20 bg-[#141414] accent-blue-600"
-              />
-              Beni hatırla
-            </label>
+          <div className="flex items-center justify-end text-sm">
             <a href="#" className="font-medium text-blue-500 hover:text-blue-400">
               Şifremi unuttum
             </a>
           </div>
 
+          {error && (
+            <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-sm text-red-400">
+              {error}
+            </p>
+          )}
+
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white py-2.5 text-sm font-semibold text-black transition hover:bg-gray-200"
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white py-2.5 text-sm font-semibold text-black transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <span aria-hidden>&rarr;</span>
-            Giriş yap
+            {loading ? "Giriş yapılıyor..." : "Giriş yap"}
           </button>
         </form>
 

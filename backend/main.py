@@ -1,5 +1,8 @@
 import os
 import asyncio
+from pathlib import Path
+import bcrypt
+import psycopg2
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -7,15 +10,26 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-# .env.local dosyasındaki değişkenleri güvenli bir şekilde yükle
-load_dotenv(".env.local")
+# .env.local (Gemini anahtarı) ve proje kökündeki .env (veritabanı bilgileri) dosyalarını yükle
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env.local")
+load_dotenv(BASE_DIR.parent / ".env")
 
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
-    raise ValueError("GEMINI_API_KEY bulunamadı! Lütfen backend/.env.local dosyasını kontrol edin.")
+    print("UYARI: GEMINI_API_KEY bulunamadı! /api/verify çalışmayacak. backend/.env.local dosyasını kontrol edin.")
 
-# Yeni resmi Google GenAI istemcisini başlat
-client = genai.Client(api_key=api_key)
+# Yeni resmi Google GenAI istemcisini başlat (anahtar yoksa doğrulama endpoint'i devre dışı kalır)
+client = genai.Client(api_key=api_key) if api_key else None
+
+# Docker Compose ile ayağa kalkan PostgreSQL'e bağlantı bilgileri (.env yoksa compose varsayılanları)
+DB_CONFIG = {
+    "host": os.getenv("DB_HOST", "localhost"),
+    "port": int(os.getenv("DB_PORT", "5432")),
+    "user": os.getenv("DB_USER", "admin"),
+    "password": os.getenv("DB_PASSWORD", "secretpassword"),
+    "dbname": os.getenv("DB_NAME", "bootcamp_db"),
+}
 
 app = FastAPI(title="Fact-Check AI Orchestrator API", version="1.0.0")
 
@@ -47,9 +61,46 @@ class VerificationResponse(BaseModel):
     claims_breakdown: list[ClaimBreakdownItem] = Field(description="İddianın alt parçalara ayrılarak incelendiği liste.")
     sources: list[SourceItem] = Field(description="İddiayı doğrulayan veya çürüten güvenilir kaynaklar listesi.")
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class LoginResponse(BaseModel):
+    id: int
+    name: str
+    surname: str
+    email: str
+    role: str
+
 # --- API ENDPOINT ---
+@app.post("/api/login", response_model=LoginResponse)
+def login(request: LoginRequest):
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+    except psycopg2.OperationalError:
+        raise HTTPException(status_code=503, detail="Veritabanına bağlanılamadı. Docker container'ının çalıştığından emin olun.")
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, name, surname, email, password_hash, role FROM users WHERE email = %s",
+                (request.email.strip().lower(),),
+            )
+            row = cur.fetchone()
+    finally:
+        conn.close()
+
+    # E-posta mı şifre mi yanlış belli etmemek için ikisine de aynı hata mesajını dönüyoruz
+    if not row or not bcrypt.checkpw(request.password.encode(), row[4].encode()):
+        raise HTTPException(status_code=401, detail="E-posta veya şifre hatalı.")
+
+    return LoginResponse(id=row[0], name=row[1], surname=row[2], email=row[3], role=row[5])
+
 @app.post("/api/verify", response_model=VerificationResponse)
 async def verify_claim(request: ClaimRequest):
+    if client is None:
+        raise HTTPException(status_code=503, detail="GEMINI_API_KEY tanımlı değil. backend/.env.local dosyasını kontrol edin.")
+
     if not request.text or len(request.text.strip()) < 10:
         raise HTTPException(status_code=400, detail="Lütfen analiz için geçerli ve en az 10 karakterlik bir iddia giriniz.")
 
