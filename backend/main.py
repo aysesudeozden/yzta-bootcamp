@@ -65,6 +65,12 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+class RegisterRequest(BaseModel):
+    name: str
+    surname: str
+    email: str
+    password: str
+
 class LoginResponse(BaseModel):
     id: int
     name: str
@@ -95,6 +101,48 @@ def login(request: LoginRequest):
         raise HTTPException(status_code=401, detail="E-posta veya şifre hatalı.")
 
     return LoginResponse(id=row[0], name=row[1], surname=row[2], email=row[3], role=row[5])
+
+@app.post("/api/register", response_model=LoginResponse, status_code=201)
+def register(request: RegisterRequest):
+    name = request.name.strip()
+    surname = request.surname.strip()
+    email = request.email.strip().lower()
+
+    if not name or not surname or not email:
+        raise HTTPException(status_code=400, detail="Ad, soyad ve e-posta boş olamaz.")
+
+    password = request.password
+    if len(password) < 8 or not any(c.isdigit() for c in password) or not any(c.isupper() for c in password):
+        raise HTTPException(status_code=400, detail="Şifre en az 8 karakter olmalı, 1 sayı ve 1 büyük harf içermeli.")
+
+    # Şifreyi login ile aynı yöntemle (bcrypt) hashleyip öyle saklıyoruz
+    password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+    except psycopg2.OperationalError:
+        raise HTTPException(status_code=503, detail="Veritabanına bağlanılamadı. Docker container'ının çalıştığından emin olun.")
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO users (name, surname, email, password_hash)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (email) DO NOTHING
+                RETURNING id, name, surname, email, role
+                """,
+                (name, surname, email, password_hash),
+            )
+            row = cur.fetchone()
+        conn.commit()
+    finally:
+        conn.close()
+
+    if not row:
+        raise HTTPException(status_code=409, detail="Bu e-posta adresiyle zaten bir hesap var.")
+
+    return LoginResponse(id=row[0], name=row[1], surname=row[2], email=row[3], role=row[4])
 
 @app.post("/api/verify", response_model=VerificationResponse)
 async def verify_claim(request: ClaimRequest):

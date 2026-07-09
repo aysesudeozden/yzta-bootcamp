@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { verifyClaimText } from "../services/api";
 
 // 1. ADIM: Tip Tanımlamaları (Interface)
@@ -22,13 +23,44 @@ interface VerificationResult {
   sources: Source[];
 }
 
+// Login/register sonrası localStorage'a yazılan kullanıcı bilgisi
+interface AuthUser {
+  id: number;
+  name: string;
+  surname: string;
+  email: string;
+  role: string;
+}
+
 // 2. ADIM: Ana Bileşen
 export default function Home() {
+  const router = useRouter();
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [claimText, setClaimText] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState<number>(0);
+
+  // Giriş kontrolü: localStorage'da kullanıcı yoksa login sayfasına yönlendir
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (!stored) {
+      router.replace("/login");
+      return;
+    }
+    try {
+      setUser(JSON.parse(stored) as AuthUser);
+    } catch {
+      localStorage.removeItem("user");
+      router.replace("/login");
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    router.replace("/login");
+  };
 
   // UX Şovu: Jürinin tek tıkla test edebileceği hazır iddia çiplerini (chips) tanımlıyoruz
   const sampleClaims = [
@@ -78,6 +110,9 @@ export default function Home() {
     setError(null);
   };
 
+  // Giriş kontrolü tamamlanana (veya login'e yönlendirilene) kadar içeriği gösterme
+  if (!user) return null;
+
   return (
     <main className="min-h-screen bg-[#F8FAFC] text-slate-800 py-12 px-4 sm:px-6 lg:px-8 selection:bg-blue-600 selection:text-white">
       
@@ -85,7 +120,32 @@ export default function Home() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-blue-50/80 via-indigo-50/30 to-transparent pointer-events-none -z-10" />
 
       <div className="max-w-3xl mx-auto space-y-8">
-        
+
+        {/* Üst Bar: Giriş yapan kullanıcı ve çıkış */}
+        <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center gap-2.5 rounded-full border border-slate-200/80 bg-white py-1.5 pl-1.5 pr-4 shadow-sm">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+              {(user.name[0] ?? "").toLocaleUpperCase("tr-TR")}
+              {(user.surname[0] ?? "").toLocaleUpperCase("tr-TR")}
+            </span>
+            <span className="text-sm font-semibold text-slate-700">
+              {user.name} {user.surname}
+            </span>
+            {user.role === "admin" && (
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+                admin
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-medium text-slate-500 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
+          >
+            Çıkış yap
+          </button>
+        </div>
+
         {/* Üst Başlık (Hero Section) */}
         <header className="text-center space-y-4 pt-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/80 shadow-sm">
