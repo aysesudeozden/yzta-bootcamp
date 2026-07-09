@@ -34,6 +34,7 @@ __pycache__/
 dist-info/
 
 # Sanal Ortamlar (Virtual Environments)
+postgres_data/
 venv/
 .venv/
 env/
