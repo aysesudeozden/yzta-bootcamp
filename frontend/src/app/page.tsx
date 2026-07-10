@@ -2,9 +2,9 @@
 
 import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { verifyClaimText } from "../services/api";
 
-// 1. ADIM: Tip Tanımlamaları (Interface)
 interface ClaimBreakdown {
   claim: string;
   verification: string;
@@ -23,7 +23,6 @@ interface VerificationResult {
   sources: Source[];
 }
 
-// Login/register sonrası localStorage'a yazılan kullanıcı bilgisi
 interface AuthUser {
   id: number;
   name: string;
@@ -32,9 +31,9 @@ interface AuthUser {
   role: string;
 }
 
-// 2. ADIM: Ana Bileşen
 export default function Home() {
   const router = useRouter();
+  
   const [user, setUser] = useState<AuthUser | null>(null);
   const [claimText, setClaimText] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -42,7 +41,6 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState<number>(0);
 
-  // Giriş kontrolü: localStorage'da kullanıcı yoksa login sayfasına yönlendir
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (!stored) {
@@ -62,7 +60,6 @@ export default function Home() {
     router.replace("/login");
   };
 
-  // UX Şovu: Jürinin tek tıkla test edebileceği hazır iddia çiplerini (chips) tanımlıyoruz
   const sampleClaims = [
     "NASA geçen hafta Ay'da su okyanusu bulduğunu resmi olarak açıkladı.",
     "Günde 3 bardak kahve içmek insan ömrünü ortalama 5 yıl uzatıyor.",
@@ -78,7 +75,7 @@ export default function Home() {
 
   const handleVerify = async (e: FormEvent) => {
     e.preventDefault();
-    if (!claimText.trim()) return;
+    if (!claimText.trim() || !user) return;
 
     setLoading(true);
     setResult(null);
@@ -90,7 +87,7 @@ export default function Home() {
     }, 850);
 
     try {
-      const data: VerificationResult = await verifyClaimText(claimText);
+      const data: VerificationResult = await verifyClaimText(claimText, user.id);
       clearInterval(stepInterval);
       setResult(data);
     } catch (err: unknown) {
@@ -110,19 +107,22 @@ export default function Home() {
     setError(null);
   };
 
-  // Giriş kontrolü tamamlanana (veya login'e yönlendirilene) kadar içeriği gösterme
   if (!user) return null;
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] text-slate-800 py-12 px-4 sm:px-6 lg:px-8 selection:bg-blue-600 selection:text-white">
       
-      {/* Arka Plan Dekoratif Aydınlatma (SaaS Glow Effect) */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-blue-50/80 via-indigo-50/30 to-transparent pointer-events-none -z-10" />
 
       <div className="max-w-3xl mx-auto space-y-8">
 
-        {/* Üst Bar: Giriş yapan kullanıcı ve çıkış */}
         <div className="flex items-center justify-end gap-3">
+          <Link
+            href="/history"
+            className="rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:border-blue-200 hover:text-blue-700 hover:bg-blue-50"
+          >
+            Geçmişim
+          </Link>
           <div className="flex items-center gap-2.5 rounded-full border border-slate-200/80 bg-white py-1.5 pl-1.5 pr-4 shadow-sm">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
               {(user.name[0] ?? "").toLocaleUpperCase("tr-TR")}
@@ -146,7 +146,6 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Üst Başlık (Hero Section) */}
         <header className="text-center space-y-4 pt-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/80 shadow-sm">
             <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
@@ -164,7 +163,6 @@ export default function Home() {
           </p>
         </header>
 
-        {/* Giriş Kartı (Input Section) */}
         <section className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-200/80 backdrop-blur-sm transition-all">
           <form onSubmit={handleVerify} className="space-y-4">
             <div className="flex justify-between items-center">
@@ -188,7 +186,6 @@ export default function Home() {
               />
             </div>
 
-            {/* Hızlı Örnek Çipleri (Jüri için UX kolaylığı) */}
             <div className="space-y-2 pt-1">
               <span className="text-xs font-medium text-slate-400 block">⚡ Hızlı Deneme Örnekleri:</span>
               <div className="flex flex-wrap gap-2">
@@ -206,7 +203,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Buton Alanı */}
             <div className="pt-2 flex justify-end">
               <button
                 type="submit"
@@ -234,7 +230,6 @@ export default function Home() {
           </form>
         </section>
 
-        {/* Ajan Orkestrasyon Akışı (Senior Stepper Component) */}
         {loading && (
           <section className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-200/80 animate-fadeIn">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
@@ -280,7 +275,6 @@ export default function Home() {
           </section>
         )}
 
-        {/* Hata Bildirimi */}
         {error && (
           <div className="p-4 bg-rose-50/80 border border-rose-200 rounded-xl text-rose-800 text-sm font-medium flex items-center gap-3 shadow-sm animate-shake">
             <svg className="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -290,11 +284,9 @@ export default function Home() {
           </div>
         )}
 
-        {/* Sonuç Kartı (Senior SaaS Dashboard Style) */}
         {result && !loading && (
           <article className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/80 overflow-hidden transition-all animate-fadeIn">
             
-            {/* Üst Bar: Güven Skoru Progress Bar */}
             <div className="w-full bg-slate-100 h-2">
               <div 
                 className={`h-full transition-all duration-1000 ${
@@ -307,7 +299,6 @@ export default function Home() {
 
             <div className="p-6 sm:p-8 space-y-8">
               
-              {/* Rozet ve Güven Skoru Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
                 <div className="flex items-center gap-3">
                   <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold tracking-wider uppercase border shadow-sm ${
@@ -331,7 +322,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Orkestrasyon Özeti (Callout Box) */}
               <div className="bg-slate-50/80 rounded-xl p-5 border border-slate-200/60 space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
                   <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,7 +334,6 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Alt İddia Kırılımları */}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   İddia Kırılımları ve Kanıt Analizi
@@ -364,7 +353,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Kaynakça (Grounding Section - Projenin Can Damarı) */}
               <div className="pt-6 border-t border-slate-100 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
