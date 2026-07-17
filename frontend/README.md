@@ -34,3 +34,10 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Admin Yetkisi Verme
+
+Sisteme arayüzden kayıt olan kullanıcılar varsayılan olarak `user` rolüyle başlar. Bir kullanıcıya `admin` yetkisi vermek için veritabanı konteynerine doğrudan şu komutla müdahale edebilirsiniz:
+
+```bash
+docker exec -it bootcamp_postgres psql -U admin -d bootcamp_db -c "UPDATE users SET role = 'admin' WHERE email = 'kullanici_maili@ornek.com';"
