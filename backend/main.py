@@ -13,6 +13,7 @@ import time
 import urllib.request
 import urllib.parse
 import json
+import requests
 
 # .env.local (Gemini anahtarı) ve proje kökündeki .env (veritabanı bilgileri) dosyalarını yükle
 BASE_DIR = Path(__file__).resolve().parent
