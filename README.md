@@ -28,6 +28,7 @@ bağlantılarla birlikte şeffaf biçimde raporlanır.
 
 ## Ürün Özellikleri
 
+- Metni kontrol edilebilir alt iddialara bölme (Ayrıştırma Ajanı)
 - Canlı web ve bilimsel veritabanlarında tarama (Arama Ajanı)
 - Bulgular ile iddiaların çapraz analizi (Karşılaştırma Ajanı)
 - Nihai güven skoru ve kanıt raporu sentezi (Skorlama Ajanı)
@@ -79,7 +80,7 @@ bağlantılarla birlikte şeffaf biçimde raporlanır.
 
   Sprint sonu:
 
-  ![Jira Sprint Board - Sprint Sonu](/docs/sprint1/jira-board-2.png)
+  ![Jira Sprint Board - Sprint Sonu](docs/sprint1/jira-board-2.png)
 
 - **Ürün Durumu**: Ekran görüntüleri:
 
@@ -96,4 +97,66 @@ bağlantılarla birlikte şeffaf biçimde raporlanır.
 - **Sprint Retrospective**:
   - Daily Scrum'ların WhatsApp üzerinden asenkron yürütülmesinin ekibe uyduğuna ve devam etmesine karar verilmiştir.
   - UI değişikliklerinin commit'lenmeden önce takımla paylaşılıp geri bildirim alınması yaklaşımı benimsenmiştir.
+  - Sprint'te tamamlanamayan mimari tasarım dökümanının puan tahmini gözden geçirilmeli ve sonraki sprint planlamasında ekip hızı dikkate alınmalıdır.
   - Bir sonraki sprint'te login ile arayüz sayfasının birleştirilmesine, database bağlantısına ve web tool entegrasyonuna öncelik verilecektir.
+
+---
+
+# Sprint 2
+
+- **Sprint Notları**: Sprint 2, Sprint 1'in kapanışının ardından yürütülmüş ve ürünün uçtan uca çalışır hale getirilmesine odaklanmıştır. <!-- sprint adı ve tarih aralığını Jira'dan ekleyin --> Sprint hedefi; Sprint 1'den devreden mimari tasarım dökümanının tamamlanması, login sayfası ile arayüzün birleştirilip backend'e bağlanması, database kurulumu, register sayfası, web tool'un arayüze entegrasyonu ile logging altyapısının kurulmasıdır.
+
+- **Sprint içinde tamamlanması tahmin edilen puan**: 21+ puan <!-- board görsellerinde görünmeyen 2 iş kaleminin puanlarıyla birlikte toplamı Jira'dan teyit edin -->
+
+- **Puan tamamlama mantığı**: Sprint 1'den devreden iş ile ona bağımlı entegrasyon story'leri birlikte ele alınmıştır: Mimari tasarım dökümanı (SCRUM-1: 3 puan, devir), Login sayfası ile arayüz sayfasının birleştirilmesi (SCRUM-5: 1 puan), Database bağlanması (SCRUM-6: 3 puan), Web tool'un arayüze entegrasyonu (SCRUM-7: 5 puan), Login sayfasının backend'inin tamamlanması (SCRUM-8: 2 puan), Logging (SCRUM-10: 3 puan), Arayüzde sorulan soruların tablolarının mimarisi (SCRUM-11: 1 puan), Register sayfası (SCRUM-13: 3 puan). <!-- board'da görünmeyen 2 iş kalemini (numara, başlık, puan) buraya ekleyin -->
+
+- **Backlog düzeni ve Story seçimleri**: Sprint 1 sonunda backlog'da bekletilen ve UI çıktıları hazır olduğu için önü açılan entegrasyon story'leri (SCRUM-5, SCRUM-6, SCRUM-7) Sprint 2'ye alınmış; bunlara kullanıcı yönetimini tamamlayan login backend'i ve register sayfası ile veri katmanı ve izlenebilirlik işleri (tablo mimarisi, logging) eklenmiştir.
+
+- **Daily Scrum**: Daily Scrum toplantıları WhatsApp üzerinden asenkron yürütülmeye devam etmiştir. Sprint boyunca iki daily yapılmış; üyeler login/register'ın tamamlanması, PostgreSQL + Docker ile users, fact_check ve chats tablolarının oluşturulması, Gemini API ile soru-cevap akışının veritabanına kaydedilmesi, geçmiş analizler sayfası, logging ve admin tarafı ile Fact Check API kararı hakkında ilerlemelerini paylaşmıştır:
+
+  **Daily 1**
+
+  ![Sprint 2 Daily 1 - 1](docs/sprint2/daily-1-1.png)
+  ![Sprint 2 Daily 1 - 2](docs/sprint2/daily-1-2.png)
+
+  **Daily 2**
+
+  ![Sprint 2 Daily 2](docs/sprint2/daily-2.png)
+
+- **Sprint board update**: Sprint board ekran görüntüleri:
+
+  Sprint devam ederken:
+
+  ![Sprint 2 Jira Board](docs/sprint2/jira-board-mid.png)
+
+  Sprint sonu:
+
+  ![Sprint 2 Jira Board - Sprint Sonu](docs/sprint2/jira-board-final.png)
+
+- **Ürün Durumu**: Ekran görüntüleri:
+
+  Analiz sonucu ekranı (nihai karar, güven endeksi, doğrulama özeti ve kanıt analizi):
+
+  ![Analiz Sonucu](docs/sprint2/product-analysis-result.jpeg)
+
+  Analiz sırasında ajan adımlarının canlı takibi (ayrıştırma, arama orkestrasyonu, çapraz doğrulama, sentez ve skorlama):
+
+  ![Ajan Adımları](docs/sprint2/product-agent-steps.jpeg)
+
+  Analiz Geçmişi sayfası (geçmiş doğrulama süreçleri ve raporları):
+
+  ![Analiz Geçmişi](docs/sprint2/product-analysis-history.jpeg)
+
+  Sprint içinde geliştirilen ilk sürümden geçmiş sayfası (Sohbet ve Araştırma Geçmişi — liste ve detay görünümü):
+
+  ![Sohbet ve Araştırma Geçmişi - Liste](docs/sprint2/product-chat-history-list.jpeg)
+  ![Sohbet ve Araştırma Geçmişi - Detay](docs/sprint2/product-chat-history-detail.jpeg)
+
+- **Sprint Review**: Sprint'e alınan iş kalemlerinin tamamı sprint sonunda Done durumuna alınmıştır. Sprint 1'den devreden mimari tasarım dökümanı tamamlanmış; login sayfası arayüzle birleştirilip backend'i yazılmış, register sayfası ile kullanıcı ekleme akışı kurulmuş ve bir admin kullanıcısı tanımlanmıştır. PostgreSQL + Docker ile database bağlanmış (users, fact_check, chats tabloları), arayüzde sorulan soruların tablo mimarisi kurulmuş ve Gemini API üzerinden soru-cevap akışı veritabanına kaydedilir hale getirilmiştir. Web tool olarak başlangıç için Fact Check API kullanımına karar verilmiş ve arayüze entegrasyonu ile logging altyapısı tamamlanmıştır. Geçmiş analizlerin görüntülenebildiği "Sohbet ve Araştırma Geçmişi" sayfası eklenmiştir. Canlıya alma (deployment) seçenekleri araştırılmaya başlanmış olup bir sonraki sprint'te ele alınacaktır. Sprint Review katılımcıları: Buket Yurt, Sude Özden, Sedef Ülker, Feyza İrem Kart.
+
+- **Sprint Retrospective**:
+  - Sprint'e birbirini bloklayan task'ların birlikte alınması nedeniyle sprint içinde bloklanmalar yaşanmıştır; sonraki sprint planlamalarında birbirine bağımlı task'ların aynı sprint'e alınmamasına veya sıralamasının buna göre planlanmasına dikkat edilmesine karar verilmiştir.
+  - WhatsApp üzerinden asenkron daily formatının ekip için verimli olduğu teyit edilmiş ve sürdürülmesine karar verilmiştir.
+  - Üyelerin işleri bittikçe diğer ekip arkadaşlarına destek için hazır beklemesi (ör. database tarafında) iyi işlemiştir; bu yaklaşım devam ettirilecektir.
+  - Sprint kapanışlarının ekipçe değerlendirilebilmesi için sprint raporu hazırlanması kararlaştırılmıştır.
+  - Bir sonraki sprint'te ürünün canlıya alınmasına (deployment) ve arayüz tasarım iyileştirmelerine öncelik verilecektir.
