@@ -26,7 +26,7 @@ export default function AdminLogsPage() {
       router.replace("/login");
       return;
     }
-    
+
     try {
       const user = JSON.parse(storedUser);
       if (user.role !== "admin") {
@@ -46,7 +46,7 @@ export default function AdminLogsPage() {
         const adminId = user.id;
 
         const response = await fetch(`http://localhost:8000/api/admin/logs?admin_id=${adminId}`);
-        
+
         if (!response.ok) {
           if (response.status === 403) {
             throw new Error("Erişim reddedildi. Bu işlemi sadece yöneticiler yapabilir.");
@@ -76,7 +76,7 @@ export default function AdminLogsPage() {
   return (
     <div className="min-h-screen w-full bg-[#161616] text-gray-100 px-4 py-10 md:px-10 font-sans">
       <div className="max-w-6xl mx-auto">
-        
+
         <div className="mb-8 border-b border-white/5 pb-6">
           <h1 className="text-2xl md:text-3xl font-semibold text-white">
             Yönetici Kontrol Paneli

@@ -265,9 +265,8 @@ export default function RegisterPage() {
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className={`h-1 flex-1 rounded-full transition ${
-                    i < strength ? STRENGTH_COLORS[strength - 1] : "bg-white/10"
-                  }`}
+                  className={`h-1 flex-1 rounded-full transition ${i < strength ? STRENGTH_COLORS[strength - 1] : "bg-white/10"
+                    }`}
                 />
               ))}
             </div>
