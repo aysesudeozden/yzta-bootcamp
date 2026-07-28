@@ -1,4 +1,11 @@
-const API_BASE_URL = "http://localhost:8000/api";
+const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    return "http://localhost:8000/api";
+  }
+  return "/api";
+};
+const API_BASE_URL = getApiBaseUrl();
 
 /** HTTP status kodunu taşıyan hata sınıfı — çağıran taraf 401/403 gibi durumları ayırt edebilsin diye. */
 export class ApiError extends Error {

@@ -45,7 +45,8 @@ export default function AdminLogsPage() {
         const user = JSON.parse(storedUser);
         const adminId = user.id;
 
-        const response = await fetch(`http://localhost:8000/api/admin/logs?admin_id=${adminId}`);
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== "undefined" && window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api");
+        const response = await fetch(`${baseUrl}/admin/logs?admin_id=${adminId}`);
 
         if (!response.ok) {
           if (response.status === 403) {
