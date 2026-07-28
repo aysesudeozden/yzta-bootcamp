@@ -63,4 +63,6 @@ desktop.ini
 !.vscode/extensions.json
 *.swp
 *.swo
-*~
+*~  
+.vercel
+env*
