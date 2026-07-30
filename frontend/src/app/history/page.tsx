@@ -76,34 +76,47 @@ export default function HistoryPage() {
   if (!user) return null;
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col">
+    <main className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col antialiased">
       {/* ÜST NAVİGASYON */}
-      <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 backdrop-blur-md shadow-sm">
+      <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 backdrop-blur-md shadow-2xs">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3 select-none group cursor-pointer min-w-0">
             <div className="grid grid-cols-2 gap-[2px] shrink-0 transition-transform duration-500 ease-in-out group-hover:rotate-180">
-              <div className="w-3.5 h-3.5 bg-blue-500 rounded-tl-[3px] shadow-sm"></div>
-              <div className="w-3.5 h-3.5 bg-slate-800 rounded-tr-[3px] shadow-sm"></div>
-              <div className="w-3.5 h-3.5 bg-slate-700 rounded-bl-[3px] shadow-sm"></div>
-              <div className="w-3.5 h-3.5 bg-white border border-slate-200 rounded-br-[3px] shadow-sm"></div>
+              <div className="w-3.5 h-3.5 bg-blue-500 rounded-tl-[3px] shadow-2xs"></div>
+              <div className="w-3.5 h-3.5 bg-slate-800 rounded-tr-[3px] shadow-2xs"></div>
+              <div className="w-3.5 h-3.5 bg-slate-700 rounded-bl-[3px] shadow-2xs"></div>
+              <div className="w-3.5 h-3.5 bg-white border border-slate-200 rounded-br-[3px] shadow-2xs"></div>
             </div>
             <div className="flex items-center relative min-w-0">
-              <span className="font-black text-xl sm:text-2xl tracking-tighter text-slate-900 truncate">
-                FACT<span className="font-light text-blue-600 ml-[1px]">CHECK</span>
+              <span className="font-black text-xl sm:text-2xl tracking-tighter text-slate-900 relative z-10 truncate">
+                FACT
+                <span
+                  aria-hidden="true"
+                  className="absolute top-0 left-[1.5px] -z-10 text-rose-500/80 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
+                  FACT
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="absolute top-0 -left-[1.5px] -z-10 text-cyan-500/80 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
+                  FACT
+                </span>
               </span>
+              <span className="font-light text-xl sm:text-2xl tracking-tighter text-blue-600 ml-[1px]">CHECK</span>
             </div>
           </Link>
 
           <div className="flex items-center gap-3 sm:gap-6 shrink-0">
             <Link
               href="/"
-              className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 px-3 py-1.5 rounded-lg"
+              className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 px-3.5 py-1.5 rounded-xl shadow-2xs"
             >
               ← Yeni Analiz
             </Link>
             <div className="hidden sm:block h-4 w-px bg-slate-200"></div>
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 shadow-sm shrink-0">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 shadow-2xs shrink-0">
                 {(user.name[0] ?? "").toLocaleUpperCase("tr-TR")}
               </span>
               <div className="hidden md:flex flex-col min-w-0">
@@ -117,7 +130,8 @@ export default function HistoryPage() {
             </div>
             <button
               onClick={handleLogout}
-              className="text-slate-400 hover:text-rose-600 transition-colors p-1 shrink-0"
+              className="text-slate-400 hover:text-rose-600 transition-colors p-1 shrink-0 cursor-pointer"
+              aria-label="Çıkış yap"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -142,7 +156,7 @@ export default function HistoryPage() {
         </header>
 
         {loading && (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center text-slate-500 animate-pulse">
+          <div className="bg-white rounded-2xl shadow-2xs border border-slate-200 p-12 flex flex-col items-center justify-center text-slate-500 animate-pulse">
             <svg className="animate-spin h-8 w-8 text-blue-600 mb-4" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -152,7 +166,7 @@ export default function HistoryPage() {
         )}
 
         {error && (
-          <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-sm font-medium flex items-center gap-3">
+          <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-sm font-medium flex items-center gap-3 shadow-2xs">
              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
              </svg>
@@ -161,15 +175,15 @@ export default function HistoryPage() {
         )}
 
         {!loading && !error && history.length === 0 && (
-          <div className="bg-white p-12 rounded-xl border border-dashed border-slate-300 text-center flex flex-col items-center justify-center shadow-sm">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+          <div className="bg-white p-12 rounded-2xl border border-dashed border-slate-300 text-center flex flex-col items-center justify-center shadow-2xs">
+            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 border border-slate-200/60">
               <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
             </div>
             <h3 className="font-bold text-lg text-slate-900 mb-1">Veritabanı Boş</h3>
             <p className="text-sm text-slate-500 max-w-sm mb-6">Sistemde henüz kaydedilmiş bir analiz raporu bulunmuyor.</p>
-            <Link href="/" className="px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors">
+            <Link href="/" className="px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-2xs">
               İlk Analizi Başlat
             </Link>
           </div>
@@ -199,21 +213,21 @@ export default function HistoryPage() {
             return (
               <div 
                 key={chat.id}
-                className={`flex flex-col bg-white rounded-xl transition-all duration-300 border ${
-                  isExpanded ? "md:col-span-2 border-slate-300 shadow-lg ring-4 ring-slate-50" : "border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md"
+                className={`flex flex-col bg-white transition-all duration-300 border rounded-2xl ${
+                  isExpanded ? "md:col-span-2 border-slate-300 shadow-md ring-4 ring-slate-50" : "border-slate-200 shadow-2xs hover:border-slate-300 hover:shadow-sm"
                 }`}
               >
-                {/* Kart Başlığı (Tıklanabilir) - BOŞLUK HATASI BURADA DÜZELTİLDİ */}
+                {/* Kart Başlığı (Tıklanabilir) */}
                 <div 
                   onClick={() => toggleExpand(chat.id)}
                   className={`p-5 sm:p-6 flex flex-col gap-4 cursor-pointer select-none transition-colors ${
-                    isExpanded ? "bg-white border-b border-slate-100 rounded-t-xl" : "h-full justify-between rounded-xl hover:bg-slate-50/50"
+                    isExpanded ? "bg-white border-b border-slate-100 rounded-t-2xl" : "h-full justify-between rounded-2xl hover:bg-slate-50/50"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4 w-full">
                     <div className="flex-1 min-w-0 space-y-3">
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                        <span className={`px-2.5 py-1 rounded text-[10px] font-black tracking-widest uppercase border ${badgeClass}`}>
+                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest uppercase border ${badgeClass}`}>
                           {aiResult.status || "BİLİNMİYOR"}
                         </span>
                         <span className="text-xs font-bold font-mono text-slate-500 shrink-0">
@@ -230,7 +244,7 @@ export default function HistoryPage() {
                     </div>
 
                     <div className="shrink-0 flex flex-col items-end gap-2 mt-1">
-                      <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${
+                      <div className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all duration-300 ${
                         isExpanded ? "border-slate-300 bg-slate-50 rotate-180" : "border-slate-200 bg-white"
                       }`}>
                          <svg className={`w-4 h-4 ${isExpanded ? "text-slate-700" : "text-slate-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,8 +263,8 @@ export default function HistoryPage() {
 
                 {/* Açılır Detay Paneli */}
                 {isExpanded && (
-                  <div className="p-4 sm:p-6 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] rounded-b-xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-300">
-                    <div className="space-y-8 bg-white/95 backdrop-blur-md p-5 sm:p-8 rounded-xl border border-slate-200/80 shadow-sm">
+                  <div className="p-4 sm:p-6 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] rounded-b-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-300">
+                    <div className="space-y-8 bg-white/95 backdrop-blur-md p-5 sm:p-8 rounded-2xl border border-slate-200/80 shadow-2xs">
                       
                       {/* Yönetici Özeti */}
                       <div className="space-y-3">
@@ -272,8 +286,8 @@ export default function HistoryPage() {
                           </h4>
                           <div className="grid gap-4">
                             {aiResult.claims_breakdown.map((sub: any, idx: number) => (
-                              <div key={idx} className="bg-slate-50/50 p-4 sm:p-5 rounded-lg border border-slate-200 flex flex-col sm:flex-row gap-3 sm:gap-4">
-                                <span className="font-mono text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1.5 rounded-md h-fit shrink-0 self-start">
+                              <div key={idx} className="bg-slate-50/50 p-4 sm:p-5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row gap-3 sm:gap-4 shadow-2xs">
+                                <span className="font-mono text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1.5 rounded-xl h-fit shrink-0 self-start">
                                   {String(idx + 1).padStart(2, "0")}
                                 </span>
                                 <div className="space-y-2 min-w-0">
@@ -300,7 +314,7 @@ export default function HistoryPage() {
                                 href={source.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="group flex items-center gap-2.5 px-3.5 py-2 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold rounded-lg shadow-sm transition-all min-w-0 max-w-full"
+                                className="group flex items-center gap-2.5 px-3.5 py-2 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold rounded-xl shadow-2xs transition-all min-w-0 max-w-full"
                               >
                                 <span className="truncate">{source.title}</span>
                                 <svg className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

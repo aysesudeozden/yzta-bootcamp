@@ -1,219 +1,649 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-interface ChatLog {
+interface ChatLogItem {
   id: number;
+  user_id: number;
+  message: string;
+  response: string;
+  model: string;
+  created_date: string;
+  user_name?: string;
+  user_surname?: string;
+  user_email?: string;
+}
+
+interface AuthUser {
+  id: number;
+  name: string;
+  surname: string;
+  email: string;
+  role: string;
+}
+
+interface UserSummary {
+  user_id: number;
   user_name: string;
   user_surname: string;
-  user_email?: string;
-  claim_text: string;
-  ai_response: string;
-  created_at: string;
+  user_email: string;
+  messageCount: number;
+  lastActivity: string;
 }
 
 export default function AdminLogsPage() {
   const router = useRouter();
-  const [logs, setLogs] = useState<ChatLog[]>([]);
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  const [activeNavTab, setActiveNavTab] = useState<"messages" | "users" | "usage" | "settings">("messages");
+  const [chatLogs, setChatLogs] = useState<ChatLogItem[]>([]);
+
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedItem, setSelectedItem] = useState<ChatLogItem | null>(null);
+
+  const redirectToLogin = useCallback(() => {
+    localStorage.removeItem("user");
+    router.replace("/login");
+  }, [router]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
-      router.replace("/login");
+      redirectToLogin();
       return;
     }
 
     try {
-      const user = JSON.parse(storedUser);
-      if (user.role !== "admin") {
+      const parsedUser = JSON.parse(storedUser) as AuthUser;
+      if (parsedUser.role !== "admin") {
         router.replace("/");
         return;
       }
-    } catch {
-      localStorage.removeItem("user");
-      router.replace("/login");
-      return;
-    }
+      setUser(parsedUser);
 
-    const fetchLogs = async () => {
-      try {
-        setLoading(true);
-        const user = JSON.parse(storedUser);
-        const adminId = user.id;
+      const fetchAllLogs = async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`http://localhost:8000/api/admin/logs?admin_id=${parsedUser.id}`);
 
-        const response = await fetch(`http://localhost:8000/api/admin/logs?admin_id=${adminId}`);
-
-        if (!response.ok) {
-          if (response.status === 403) {
-            throw new Error("Erişim reddedildi. Bu işlemi sadece yöneticiler yapabilir.");
+          if (!response.ok) {
+            if (response.status === 403) {
+              throw new Error("Erişim reddedildi. Bu alanı sadece yöneticiler görebilir.");
+            }
+            throw new Error("Veriler getirilirken sunucu hatası oluştu.");
           }
-          throw new Error("Veriler getirilirken bir hata oluştu.");
+
+          const data = await response.json();
+          setChatLogs(data.chats || []);
+        } catch (err: any) {
+          setError(err.message || "Bir şeyler ters gitti.");
+        } finally {
+          setLoading(false);
         }
+      };
 
-        const data = await response.json();
-        setLogs(data.logs);
-      } catch (err: any) {
-        setError(err.message || "Bir şeyler ters gitti.");
-      } finally {
-        setLoading(false);
-      }
-    };
+      fetchAllLogs();
+    } catch {
+      redirectToLogin();
+    }
+  }, [router, redirectToLogin]);
 
-    fetchLogs();
-  }, [router]);
-
-  const filteredLogs = logs.filter(
+  const filteredChatLogs = chatLogs.filter(
     (log) =>
-      log.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.user_surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.claim_text.toLowerCase().includes(searchTerm.toLowerCase())
+      (log.user_name && log.user_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (log.message && log.message.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  return (
-    <div className="min-h-screen w-full bg-[#161616] text-gray-100 px-4 py-10 md:px-10 font-sans">
-      <div className="max-w-6xl mx-auto">
+  const userSummaries: UserSummary[] = Object.values(
+    chatLogs.reduce((acc: Record<number, UserSummary>, log) => {
+      const key = log.user_id;
+      if (!acc[key]) {
+        acc[key] = {
+          user_id: log.user_id,
+          user_name: log.user_name || "Bilinmeyen",
+          user_surname: log.user_surname || "",
+          user_email: log.user_email || "",
+          messageCount: 0,
+          lastActivity: log.created_date,
+        };
+      }
+      acc[key].messageCount += 1;
+      if (new Date(log.created_date) > new Date(acc[key].lastActivity)) {
+        acc[key].lastActivity = log.created_date;
+      }
+      return acc;
+    }, {})
+  ).sort((a, b) => b.messageCount - a.messageCount);
 
-        <div className="mb-8 border-b border-white/5 pb-6">
-          <h1 className="text-2xl md:text-3xl font-semibold text-white">
-            Yönetici Kontrol Paneli
-          </h1>
-          <p className="mt-2 text-sm text-gray-400">
-            Doğrulama geçmişini izleyin ve logları yönetin
-          </p>
+  const filteredUserSummaries = userSummaries.filter(
+    (u) =>
+      `${u.user_name} ${u.user_surname}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.user_email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const modelUsage: { model: string; count: number }[] = Object.entries(
+    chatLogs.reduce((acc: Record<string, number>, log) => {
+      const key = log.model || "bilinmiyor";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {})
+  )
+    .map(([model, count]) => ({ model, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const dailyUsage: { day: string; count: number }[] = Object.entries(
+    chatLogs.reduce((acc: Record<string, number>, log) => {
+      const day = log.created_date ? log.created_date.slice(0, 10) : "bilinmiyor";
+      acc[day] = (acc[day] || 0) + 1;
+      return acc;
+    }, {})
+  )
+    .map(([day, count]) => ({ day, count }))
+    .sort((a, b) => b.day.localeCompare(a.day))
+    .slice(0, 14);
+
+  const maxDailyCount = Math.max(1, ...dailyUsage.map((d) => d.count));
+
+  const activeUserCount = userSummaries.length;
+  const avgResponseLength =
+    chatLogs.length > 0
+      ? Math.round(chatLogs.reduce((sum, log) => sum + (log.response?.length || 0), 0) / chatLogs.length)
+      : 0;
+  const topModel = modelUsage[0]?.model || "—";
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "-";
+    try {
+      return new Date(dateString).toLocaleString("tr-TR", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).replace(",", " ·");
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatDay = (dayString: string) => {
+    if (!dayString || dayString === "bilinmiyor") return "Bilinmiyor";
+    try {
+      return new Date(dayString).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" });
+    } catch {
+      return dayString;
+    }
+  };
+
+  if (!user) return null;
+
+  return (
+    <div className="min-h-screen w-full bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100 pb-16 antialiased">
+
+      {/* ÜST NAVİGASYON */}
+      <nav className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/90 backdrop-blur-md shadow-2xs">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-3 select-none group cursor-pointer min-w-0">
+              <div className="grid grid-cols-2 gap-[2px] w-5 h-5 shrink-0 transition-transform duration-500 ease-in-out group-hover:rotate-180">
+                <div className="bg-blue-600 rounded-tl-[2px] shadow-2xs"></div>
+                <div className="bg-slate-800 rounded-tr-[2px] shadow-2xs"></div>
+                <div className="bg-slate-600 rounded-bl-[2px] shadow-2xs"></div>
+                <div className="bg-slate-300 rounded-br-[2px] shadow-2xs"></div>
+              </div>
+              <div className="flex items-center relative min-w-0">
+                <span className="font-black text-xl sm:text-2xl tracking-tighter text-slate-900 relative z-10 truncate">
+                  FACT
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 left-[1.5px] -z-10 text-rose-500/80 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  >
+                    FACT
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 -left-[1.5px] -z-10 text-cyan-500/80 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  >
+                    FACT
+                  </span>
+                </span>
+                <span className="font-light text-xl sm:text-2xl tracking-tighter text-blue-600 ml-[1px]">ADMIN</span>
+              </div>
+            </Link>
+
+            <div className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/80 shadow-2xs">
+              <button
+                onClick={() => setActiveNavTab("messages")}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${activeNavTab === "messages" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}`}
+              >
+                Mesajlar
+              </button>
+              <button
+                onClick={() => setActiveNavTab("users")}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${activeNavTab === "users" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}`}
+              >
+                Kullanıcılar
+              </button>
+              <button
+                onClick={() => setActiveNavTab("usage")}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${activeNavTab === "usage" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}`}
+              >
+                Kullanım
+              </button>
+              <button
+                onClick={() => setActiveNavTab("settings")}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${activeNavTab === "settings" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}`}
+              >
+                Ayarlar
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(chatLogs, null, 2));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", `chat_logs_export.json`);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+              }}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer"
+            >
+              <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Export</span>
+            </button>
+
+            <Link
+              href="/"
+              className="px-4 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition shadow-2xs"
+            >
+              Ana Sayfa
+            </Link>
+          </div>
+
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="relative flex-1">
+        {/* Mobil sekme seçici */}
+        <div className="md:hidden flex items-center gap-1 px-4 pb-3 overflow-x-auto">
+          {([
+            ["messages", "Mesajlar"],
+            ["users", "Kullanıcılar"],
+            ["usage", "Kullanım"],
+            ["settings", "Ayarlar"],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setActiveNavTab(key)}
+              className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
+                activeNavTab === key ? "bg-slate-900 text-white shadow-2xs" : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {/* İÇERİK BÖLGESİ */}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-8 space-y-6">
+
+        {/* ÜST İSTATİSTİK KARTLARI */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="rounded-2xl bg-white p-5 border border-slate-200 shadow-2xs flex flex-col justify-between">
+            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Toplam mesaj</div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-black text-slate-900">{chatLogs.length}</span>
+            </div>
+            <div className="text-[11px] font-semibold text-emerald-600 mt-2">Aktif sistem logu</div>
+          </div>
+
+          <div className="rounded-2xl bg-white p-5 border border-slate-200 shadow-2xs flex flex-col justify-between">
+            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Aktif kullanıcı</div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-black text-slate-900">{activeUserCount}</span>
+            </div>
+            <div className="text-[11px] font-medium text-slate-400 mt-2">kayıtlı loglara göre</div>
+          </div>
+
+          <div className="rounded-2xl bg-white p-5 border border-slate-200 shadow-2xs flex flex-col justify-between">
+            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Ort. yanıt uzunluğu</div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-black text-slate-900">{avgResponseLength}</span>
+              <span className="text-xs font-medium text-slate-500">karakter</span>
+            </div>
+            <div className="text-[11px] font-medium text-slate-400 mt-2">tüm zamanlar</div>
+          </div>
+
+          <div className="rounded-2xl bg-white p-5 border border-slate-200 shadow-2xs flex flex-col justify-between">
+            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">En çok kullanılan model</div>
+            <div className="mt-3">
+              <span className="text-2xl font-black text-slate-900 truncate block">{topModel}</span>
+            </div>
+            <div className="text-[11px] font-medium text-slate-400 mt-2">tüm zamanlar</div>
+          </div>
+        </div>
+
+        {/* ARAMA ÇUBUĞU */}
+        {(activeNavTab === "messages" || activeNavTab === "users") && (
+          <div className="w-full md:w-96">
             <input
               type="text"
-              placeholder="Kullanıcı adı veya iddia ara..."
+              placeholder={activeNavTab === "messages" ? "Sohbetlerde veya mesajlarda ara..." : "Kullanıcı adı veya e-posta ara..."}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-[#1c1c1c] px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-500 shadow-2xs"
             />
           </div>
-          <button className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#1c1c1c] px-5 py-3 text-sm font-medium text-gray-300 hover:bg-white/5 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-            </svg>
-            Filtrele
-          </button>
-        </div>
+        )}
 
         {loading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-3"></div>
+            <span className="text-xs font-mono uppercase tracking-wider">Veriler yükleniyor...</span>
           </div>
         )}
 
         {error && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 text-center mb-6">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 text-center shadow-2xs">
             {error}
           </div>
         )}
 
-        {!loading && !error && filteredLogs.length === 0 && (
-          <div className="text-center py-12 border border-white/5 rounded-2xl bg-[#1c1c1c]">
-            <p className="text-sm text-gray-500">Gösterilecek herhangi bir log kaydı bulunamadı.</p>
-          </div>
-        )}
+        {/* ================= MESAJLAR SEKMESİ ================= */}
+        {!loading && !error && activeNavTab === "messages" && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Sohbet Geçmişi Listesi
+              </span>
+              <span className="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                {filteredChatLogs.length} sonuç
+              </span>
+            </div>
 
-        {!loading && !error && filteredLogs.length > 0 && (
-          <div className="hidden md:block overflow-hidden rounded-2xl border border-white/10 bg-[#1c1c1c] shadow-2xl">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-[#141414] border-b border-white/10 text-gray-300">
-                <tr>
-                  <th className="py-4 px-6 font-medium">ID</th>
-                  <th className="py-4 px-6 font-medium">Kullanıcı</th>
-                  <th className="py-4 px-6 font-medium">Sorgulanan İddia</th>
-                  <th className="py-4 px-6 font-medium">Gemini Analizi</th>
-                  <th className="py-4 px-6 font-medium text-right">Tarih</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {filteredLogs.map((log) => (
-                  <tr key={log.id} className="transition hover:bg-white/5">
-                    <td className="py-4 px-6">
-                      <span className="rounded-lg bg-[#141414] px-2.5 py-1 text-xs font-mono text-gray-400 border border-white/5">
-                        #{log.id}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="font-semibold text-white">
-                        {log.user_name} {log.user_surname}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
-                        {log.user_email || "kullanici@ornek.com"}
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-gray-300 max-w-xs truncate" title={log.claim_text}>
-                      {log.claim_text}
-                    </td>
-                    <td className="py-4 px-6 text-gray-400 max-w-md truncate" title={log.ai_response}>
-                      {log.ai_response}
-                    </td>
-                    <td className="py-4 px-6 text-gray-500 text-right text-xs font-mono">
-                      {new Date(log.created_at).toLocaleString("tr-TR", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {!loading && !error && filteredLogs.length > 0 && (
-          <div className="md:hidden space-y-4">
-            {filteredLogs.map((log) => (
-              <div
-                key={log.id}
-                className="rounded-2xl border border-white/10 bg-[#1c1c1c] p-5 shadow-lg flex flex-col gap-3"
-              >
-                <div className="flex justify-between items-center border-b border-white/5 pb-3">
-                  <span className="rounded-lg bg-[#141414] px-2.5 py-1 text-xs font-mono text-gray-400 border border-white/5">
-                    #{log.id}
-                  </span>
-                  <span className="text-xs text-gray-500 font-mono">
-                    {new Date(log.created_at).toLocaleString("tr-TR", {
-                      dateStyle: "short",
-                      timeStyle: "short",
+            {filteredChatLogs.length === 0 ? (
+              <div className="text-center py-16 text-slate-400 text-sm">Gösterilecek sohbet kaydı bulunamadı.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 text-xs font-semibold">
+                    <tr>
+                      <th className="py-3.5 px-6">User ID</th>
+                      <th className="py-3.5 px-6">Kullanıcı Mesajı</th>
+                      <th className="py-3.5 px-6">Tarih</th>
+                      <th className="py-3.5 px-6">Model</th>
+                      <th className="py-3.5 px-6 text-right">Detay</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredChatLogs.map((log) => {
+                      const userIdTag = `usr_${log.user_id || 1}xK`;
+                      return (
+                        <tr
+                          key={log.id}
+                          onClick={() => setSelectedItem(log)}
+                          className="transition hover:bg-slate-50/80 cursor-pointer group"
+                        >
+                          <td className="py-4 px-6 font-mono text-xs font-semibold text-slate-700">
+                            <span className="bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200">
+                              {userIdTag}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 text-slate-800 font-medium max-w-sm truncate" title={log.message}>
+                            {log.message}
+                          </td>
+                          <td className="py-4 px-6 text-xs text-slate-500 font-mono">
+                            {formatDate(log.created_date)}
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                              {log.model || "gemini-2.5"}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 text-right">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl border border-slate-200 bg-white text-slate-400 group-hover:border-slate-300 group-hover:text-slate-900 transition shadow-2xs">
+                              →
+                            </span>
+                          </td>
+                        </tr>
+                      );
                     })}
-                  </span>
-                </div>
-
-                <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Kullanıcı</div>
-                  <div className="text-sm font-medium text-white mt-1">
-                    {log.user_name} {log.user_surname}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Sorgulanan İddia</div>
-                  <div className="text-sm text-gray-300 mt-1 line-clamp-2" title={log.claim_text}>
-                    {log.claim_text}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Gemini Analizi</div>
-                  <div className="text-sm text-gray-400 mt-1 line-clamp-3" title={log.ai_response}>
-                    {log.ai_response}
-                  </div>
-                </div>
+                  </tbody>
+                </table>
               </div>
-            ))}
+            )}
+          </div>
+        )}
+
+        {/* ================= KULLANICILAR SEKMESİ ================= */}
+        {!loading && !error && activeNavTab === "users" && (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Sistemi Kullanan Kullanıcılar
+              </span>
+              <span className="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                {filteredUserSummaries.length} kullanıcı
+              </span>
+            </div>
+
+            {filteredUserSummaries.length === 0 ? (
+              <div className="text-center py-16 text-slate-400 text-sm">Gösterilecek kullanıcı bulunamadı.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 text-xs font-semibold">
+                    <tr>
+                      <th className="py-3.5 px-6">Kullanıcı</th>
+                      <th className="py-3.5 px-6">E-posta</th>
+                      <th className="py-3.5 px-6">Mesaj Sayısı</th>
+                      <th className="py-3.5 px-6">Son Aktivite</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredUserSummaries.map((u) => (
+                      <tr key={u.user_id} className="hover:bg-slate-50/80 transition">
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 shrink-0">
+                              {(u.user_name[0] ?? "?").toLocaleUpperCase("tr-TR")}
+                            </span>
+                            <span className="font-semibold text-slate-900 truncate">
+                              {u.user_name} {u.user_surname}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-slate-600 truncate">{u.user_email || "—"}</td>
+                        <td className="py-4 px-6">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                            {u.messageCount}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-xs text-slate-500 font-mono">{formatDate(u.lastActivity)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ================= KULLANIM SEKMESİ ================= */}
+        {!loading && !error && activeNavTab === "usage" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Model Dağılımı</span>
+              </div>
+              <div className="p-6 space-y-4">
+                {modelUsage.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400 text-sm">Henüz veri yok.</div>
+                ) : (
+                  modelUsage.map((m) => {
+                    const pct = chatLogs.length > 0 ? Math.round((m.count / chatLogs.length) * 100) : 0;
+                    return (
+                      <div key={m.model} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-semibold text-slate-700 font-mono">{m.model}</span>
+                          <span className="font-mono text-slate-500">{m.count} istek · %{pct}</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-600 rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Son Aktivite (Günlük)</span>
+              </div>
+              <div className="p-6 space-y-2.5">
+                {dailyUsage.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400 text-sm">Henüz veri yok.</div>
+                ) : (
+                  dailyUsage.map((d) => (
+                    <div key={d.day} className="flex items-center gap-3">
+                      <span className="text-xs font-mono text-slate-500 w-14 shrink-0">{formatDay(d.day)}</span>
+                      <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-emerald-500 rounded-full"
+                          style={{ width: `${(d.count / maxDailyCount) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-slate-700 w-6 text-right shrink-0">{d.count}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================= AYARLAR SEKMESİ ================= */}
+        {!loading && !error && activeNavTab === "settings" && (
+          <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center flex flex-col items-center justify-center shadow-2xs">
+            <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
+              <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <h3 className="font-bold text-slate-900 mb-1">Ayarlar yakında</h3>
+            <p className="text-sm text-slate-500 max-w-sm"></p>
           </div>
         )}
 
       </div>
+
+      {/* YÖNETİCİ MODALI */}
+      {selectedItem && (() => {
+        const data = selectedItem;
+
+        const userIdText = `usr_${data.user_id || 1}xK`;
+        const userNameText = `${data.user_name || "Kullanıcı"} ${data.user_surname || ""}`.trim();
+        const modelName = data.model || "gemini-2.5-flash";
+        const dateText = formatDate(data.created_date);
+
+        const claimText = data.message;
+
+        let responseText = data.response;
+        if (typeof data.response === "string" && data.response.trim().startsWith("{")) {
+          try {
+            const parsed = JSON.parse(data.response);
+            responseText = parsed.summary || parsed.message || data.response;
+          } catch {
+            responseText = data.response;
+          }
+        }
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fadeIn">
+            <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto text-slate-900">
+
+              <div className="flex items-center justify-between pb-1">
+                <h2 className="text-base font-bold text-slate-900 tracking-tight">Mesaj detayı</h2>
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer"
+                  aria-label="Kapat"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-200/80 shadow-2xs">
+                  <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">User ID / İsim</div>
+                  <div className="text-sm font-bold text-slate-900 mt-1 truncate">
+                    {userNameText} <span className="text-xs font-mono text-slate-500">({userIdText})</span>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-200/80 shadow-2xs flex flex-col justify-center">
+                  <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Model</div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="h-2 w-2 rounded-full bg-blue-600 inline-block"></span>
+                    <span className="text-xs font-semibold text-blue-700 font-mono">
+                      {modelName}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-200/80 shadow-2xs">
+                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Tarih</div>
+                <div className="text-xs font-semibold text-slate-800 mt-1 font-mono">
+                  {dateText}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kullanıcı Mesajı</div>
+                <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-900 border border-slate-200/80 leading-relaxed font-medium shadow-2xs">
+                  {claimText}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Model Yanıtı</div>
+                <div className="rounded-2xl bg-[#0c2340] p-4 text-sm text-blue-50 border border-blue-900/20 leading-relaxed shadow-2xs font-normal">
+                  {responseText}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center pt-2 border-t border-slate-100">
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="rounded-2xl bg-slate-100 p-2.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition shadow-2xs cursor-pointer"
+                  title="Kapat"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 transform rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  </svg>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        );
+      })()}
+
     </div>
   );
 }
