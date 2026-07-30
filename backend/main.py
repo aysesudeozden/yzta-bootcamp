@@ -410,7 +410,7 @@ async def verify_claim(request: ClaimRequest):
     try:
         # --- 3. ADIM: Yapılandırılmış Analiz (sources İSTEMİYORUZ, sadece metinsel alanlar) ---
         response = _call_with_retry(lambda: client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-2.5-flash',
             contents=request.text,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
