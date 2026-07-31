@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, FormEvent, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { verifyClaimText } from "../services/api";
+import ThemeToggle from "./components/ThemeToggle";
 
 interface ClaimBreakdown {
   claim: string;
@@ -239,18 +240,18 @@ export default function Home() {
   const hasStarted = loading || result !== null;
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col antialiased">
-      <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 backdrop-blur-md shadow-2xs">
+    <main className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col antialiased transition-colors">
+      <nav className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-2xs">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 select-none group cursor-pointer min-w-0">
             <div className="grid grid-cols-2 gap-[2px] shrink-0 transition-transform duration-500 ease-in-out group-hover:rotate-180">
               <div className="w-3.5 h-3.5 bg-blue-500 rounded-tl-[3px] shadow-sm"></div>
-              <div className="w-3.5 h-3.5 bg-slate-800 rounded-tr-[3px] shadow-sm"></div>
-              <div className="w-3.5 h-3.5 bg-slate-700 rounded-bl-[3px] shadow-sm"></div>
-              <div className="w-3.5 h-3.5 bg-white border border-slate-200 rounded-br-[3px] shadow-sm"></div>
+              <div className="w-3.5 h-3.5 bg-slate-800 dark:bg-slate-300 rounded-tr-[3px] shadow-sm"></div>
+              <div className="w-3.5 h-3.5 bg-slate-700 dark:bg-slate-400 rounded-bl-[3px] shadow-sm"></div>
+              <div className="w-3.5 h-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-br-[3px] shadow-sm"></div>
             </div>
             <div className="flex items-center relative min-w-0">
-              <span className="font-black text-xl sm:text-2xl tracking-tighter text-slate-900 relative z-10 truncate">
+              <span className="font-black text-xl sm:text-2xl tracking-tighter text-slate-900 dark:text-slate-100 relative z-10 truncate">
                 FACT
                 <span
                   aria-hidden="true"
@@ -272,35 +273,36 @@ export default function Home() {
           <div className="flex items-center gap-3 sm:gap-6 shrink-0">
             <Link
               href="/history"
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 rounded-xl shadow-2xs"
+              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-3.5 py-1.5 rounded-xl shadow-2xs"
             >
               Analiz Geçmişi
             </Link>
             {user.role === "admin" && (
               <Link
                 href="/admin"
-                className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 px-3.5 py-1.5 rounded-xl shadow-2xs"
+                className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors bg-blue-50 dark:bg-blue-500/10 px-3.5 py-1.5 rounded-xl shadow-2xs"
               >
                 Admin Panel
               </Link>
             )}
-            <div className="hidden sm:block h-4 w-px bg-slate-200"></div>
+            <div className="hidden sm:block h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 shadow-2xs shrink-0">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs shrink-0">
                 {(user.name[0] ?? "").toLocaleUpperCase("tr-TR")}
               </span>
               <div className="hidden md:flex flex-col min-w-0">
-                <span className="text-xs font-bold text-slate-900 truncate">
+                <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                   {user.name} {user.surname}
                 </span>
-                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide truncate">
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wide truncate">
                   {user.role}
                 </span>
               </div>
             </div>
+            <ThemeToggle />
             <button
               onClick={handleLogout}
-              className="text-slate-400 hover:text-rose-600 transition-colors p-1 shrink-0 cursor-pointer"
+              className="text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-500 transition-colors p-1 shrink-0 cursor-pointer"
               aria-label="Çıkış yap"
               title="Çıkış Yap"
             >
@@ -330,31 +332,31 @@ export default function Home() {
           }
         >
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold tracking-wide shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 text-blue-700 dark:text-blue-400 text-xs font-semibold tracking-wide shadow-2xs">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
               </span>
               Otonom Ağ Aktif
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-[1.15]">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 leading-[1.15]">
               Gerçek Zamanlı <br />
-              <span className="text-slate-400 font-medium">Doğrulama Asistanı</span>
+              <span className="text-slate-400 dark:text-slate-500 font-medium">Doğrulama Asistanı</span>
             </h1>
-            <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-md">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed max-w-md">
               Şüpheli metni yapıştırın. Yapay zeka ajanları saniyeler içinde kaynak taraması yaparak kanıta dayalı bir rapor sunacaktır.
             </p>
           </div>
 
           <form
             onSubmit={handleVerify}
-            className="bg-white rounded-2xl shadow-2xs border border-slate-200 overflow-hidden transition-all focus-within:ring-2 focus-within:ring-slate-900/5 focus-within:border-slate-300"
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xs border border-slate-200 dark:border-slate-800 overflow-hidden transition-all focus-within:ring-2 focus-within:ring-slate-900/5 dark:focus-within:ring-slate-100/10 focus-within:border-slate-300 dark:focus-within:border-slate-700"
           >
-            <div className="bg-slate-50/50 px-5 py-3 border-b border-slate-100 flex justify-between items-center gap-3">
-              <label htmlFor="claim-input" className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            <div className="bg-slate-50/50 dark:bg-slate-800/60 px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center gap-3">
+              <label htmlFor="claim-input" className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Analiz Girdisi
               </label>
-              <span className={`text-[10px] font-semibold font-mono shrink-0 ${overLimit ? "text-rose-600" : "text-slate-400"}`}>
+              <span className={`text-[10px] font-semibold font-mono shrink-0 ${overLimit ? "text-rose-600 dark:text-rose-400" : "text-slate-400 dark:text-slate-500"}`}>
                 {charCount}/{MAX_CLAIM_LENGTH}
               </span>
             </div>
@@ -362,7 +364,7 @@ export default function Home() {
             <textarea
               id="claim-input"
               rows={6}
-              className="w-full bg-transparent p-5 text-slate-900 placeholder-slate-400 text-base font-medium focus:outline-none resize-none"
+              className="w-full bg-transparent p-5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-base font-medium focus:outline-none resize-none"
               placeholder="Araştırılacak haberi, finansal iddiayı veya içeriği buraya yapıştırın..."
               value={claimText}
               onChange={(e) => setClaimText(e.target.value)}
@@ -370,14 +372,14 @@ export default function Home() {
               aria-describedby="claim-length-hint"
             />
             {overLimit && (
-              <p id="claim-length-hint" className="px-5 pb-2 text-xs font-medium text-rose-600">
+              <p id="claim-length-hint" className="px-5 pb-2 text-xs font-medium text-rose-600 dark:text-rose-400">
                 Metin {MAX_CLAIM_LENGTH} karakter sınırını aşıyor. Lütfen kısaltın.
               </p>
             )}
 
-            <div className="p-5 bg-white border-t border-slate-100 flex flex-col gap-5">
+            <div className="p-5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-5">
               <div className="space-y-2.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Örnek Parametreler</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Örnek Parametreler</span>
                 <div className="flex flex-col gap-2">
                   {sampleClaims.map((sample) => (
                     <button
@@ -385,7 +387,7 @@ export default function Home() {
                       type="button"
                       onClick={() => handleSelectSample(sample)}
                       disabled={loading}
-                      className="text-left text-xs font-medium bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 py-2.5 px-3.5 rounded-xl transition-colors truncate w-full border border-slate-200/60 shadow-2xs cursor-pointer"
+                      className="text-left text-xs font-medium bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 py-2.5 px-3.5 rounded-xl transition-colors truncate w-full border border-slate-200/60 dark:border-slate-700/60 shadow-2xs cursor-pointer"
                     >
                       {sample}
                     </button>
@@ -396,7 +398,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={loading || !claimText.trim() || overLimit}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white transition-colors text-sm font-semibold rounded-xl shadow-2xs cursor-pointer disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white dark:text-slate-900 transition-colors text-sm font-semibold rounded-xl shadow-2xs cursor-pointer disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -420,7 +422,7 @@ export default function Home() {
           {error && (
             <div
               role="alert"
-              className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm font-medium flex items-center gap-3 shadow-2xs"
+              className="p-4 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-xl text-rose-700 dark:text-rose-400 text-sm font-medium flex items-center gap-3 shadow-2xs"
             >
               <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -437,27 +439,27 @@ export default function Home() {
 
         {hasStarted && (
         <section className="xl:col-span-7 w-full min-w-0">
-          <div className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-3xl overflow-hidden shadow-sm flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3 bg-white shrink-0">
+          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-sm flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-white dark:bg-slate-900 shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="flex gap-1.5 shrink-0" aria-hidden="true">
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-200"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-200"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-200"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
                 </div>
-                <div className="h-3 w-px bg-slate-200 shrink-0"></div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
+                <div className="h-3 w-px bg-slate-200 dark:bg-slate-700 shrink-0"></div>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">
                   İşlem Kayıtları
                 </span>
               </div>
               <span
                 className={`text-[10px] font-bold font-mono uppercase tracking-widest shrink-0 ${
-                  loading ? "text-blue-600" : "text-emerald-600"
+                  loading ? "text-blue-600 dark:text-blue-400" : "text-emerald-600 dark:text-emerald-400"
                 }`}
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" aria-hidden="true"></span>
+                    <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" aria-hidden="true"></span>
                     VERİ İŞLENİYOR
                   </span>
                 ) : (
@@ -466,14 +468,14 @@ export default function Home() {
               </span>
             </div>
 
-            <div className="flex-1 relative bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] p-4 sm:p-6">
+            <div className="flex-1 relative bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] p-4 sm:p-6">
           {loading && (
-            <div className="bg-white rounded-2xl shadow-2xs border border-slate-200 p-6 sm:p-8 min-h-[460px] flex flex-col justify-center relative overflow-hidden animate-in fade-in duration-500">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-10 border-b border-slate-100 pb-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xs border border-slate-200 dark:border-slate-800 p-6 sm:p-8 min-h-[460px] flex flex-col justify-center relative overflow-hidden animate-in fade-in duration-500">
+              <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-10 border-b border-slate-100 dark:border-slate-800 pb-4">
                 Ayrıştırma Adımları
               </h3>
 
-              <div className="space-y-8 relative before:absolute before:inset-0 before:left-[17px] before:w-px before:bg-slate-100">
+              <div className="space-y-8 relative before:absolute before:inset-0 before:left-[17px] before:w-px before:bg-slate-100 dark:before:bg-slate-800">
                 {steps.map((step, index) => {
                   const isPast = index < activeStep;
                   const isCurrent = index === activeStep;
@@ -485,12 +487,12 @@ export default function Home() {
                       }`}
                     >
                       <div
-                        className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 border-2 bg-white transition-colors duration-300 ${
+                        className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 border-2 bg-white dark:bg-slate-900 transition-colors duration-300 ${
                           isCurrent
-                            ? "border-blue-600 text-blue-600 shadow-[0_0_0_4px_rgba(37,99,235,0.1)]"
+                            ? "border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 shadow-[0_0_0_4px_rgba(37,99,235,0.1)]"
                             : isPast
-                            ? "border-slate-800 text-slate-800"
-                            : "border-slate-200 text-slate-400"
+                            ? "border-slate-800 dark:border-slate-300 text-slate-800 dark:text-slate-300"
+                            : "border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500"
                         }`}
                       >
                         {isPast ? (
@@ -502,13 +504,13 @@ export default function Home() {
                         )}
                       </div>
                       <div className="pt-2 flex-1 min-w-0">
-                        <div className={`text-sm font-bold ${isCurrent ? "text-slate-900" : "text-slate-700"}`}>
+                        <div className={`text-sm font-bold ${isCurrent ? "text-slate-900 dark:text-slate-100" : "text-slate-700 dark:text-slate-300"}`}>
                           {step.title}
                         </div>
-                        <div className="text-xs text-slate-500 mt-1">{step.desc}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{step.desc}</div>
                         {isCurrent && (
-                          <div className="w-full h-1 bg-slate-100 rounded-full mt-3 overflow-hidden">
-                            <div className="h-full bg-blue-600 w-full animate-progress origin-left"></div>
+                          <div className="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full mt-3 overflow-hidden">
+                            <div className="h-full bg-blue-600 dark:bg-blue-400 w-full animate-progress origin-left"></div>
                           </div>
                         )}
                       </div>
@@ -520,10 +522,10 @@ export default function Home() {
           )}
 
           {result && !loading && (
-            <article className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="p-6 sm:p-8 border-b border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 bg-slate-50/50">
+            <article className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="p-6 sm:p-8 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 bg-slate-50/50 dark:bg-slate-800/40">
                 <div className="space-y-2 text-center md:text-left">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nihai Karar</span>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nihai Karar</span>
                   <div className="flex items-center gap-3 justify-center md:justify-start">
                     <div
                       className={`w-3 h-3 rounded-full shrink-0 ${
@@ -534,7 +536,7 @@ export default function Home() {
                           : "bg-amber-500"
                       }`}
                     />
-                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 uppercase">
+                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 uppercase">
                       {result.status}
                     </h2>
                   </div>
@@ -542,14 +544,14 @@ export default function Home() {
 
                 <div className="flex items-center gap-6 shrink-0">
                   <div className="text-right">
-                    <div className="text-3xl font-black text-slate-900 font-mono tracking-tighter">
+                    <div className="text-3xl font-black text-slate-900 dark:text-slate-100 font-mono tracking-tighter">
                       %{result.confidence_score}
                     </div>
-                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Güven Endeksi</div>
+                    <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Güven Endeksi</div>
                   </div>
-                  <div className="w-14 h-14 rounded-full relative flex items-center justify-center bg-white shadow-2xs border border-slate-100 shrink-0">
+                  <div className="w-14 h-14 rounded-full relative flex items-center justify-center bg-white dark:bg-slate-900 shadow-2xs border border-slate-100 dark:border-slate-800 shrink-0">
                     <svg className="absolute inset-0 w-full h-full transform -rotate-90" aria-hidden="true">
-                      <circle cx="28" cy="28" r="24" fill="none" stroke="#f1f5f9" strokeWidth="4" />
+                      <circle cx="28" cy="28" r="24" fill="none" className="stroke-slate-100 dark:stroke-slate-800" strokeWidth="4" />
                       <circle
                         cx="28"
                         cy="28"
@@ -576,22 +578,22 @@ export default function Home() {
 
               <div className="p-6 sm:p-8 space-y-10">
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-slate-900 rounded-sm"></div>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-slate-900 dark:bg-slate-100 rounded-sm"></div>
                     Doğrulama Özeti
                   </h3>
-                  <p className="text-slate-600 text-sm md:text-base leading-relaxed pl-3.5 border-l-2 border-slate-200 font-medium">
+                  <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed pl-3.5 border-l-2 border-slate-200 dark:border-slate-800 font-medium">
                     {result.summary}
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-slate-900 rounded-sm"></div>
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-slate-900 dark:bg-slate-100 rounded-sm"></div>
                     İddia ve Kanıt Analizi
                   </h3>
 
-                  <div className="rounded-2xl bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] border border-slate-200/70 p-3 sm:p-5">
+                  <div className="rounded-2xl bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] border border-slate-200/70 dark:border-slate-800/70 p-3 sm:p-5">
                     <div className="space-y-4">
                       {result.claims_breakdown.map((item, idx) => {
                         const isRevealed = idx < revealedClaims;
@@ -600,10 +602,10 @@ export default function Home() {
                         const tilt = idx % 2 === 0 ? "-rotate-1" : "rotate-1";
                         const verdictStyle =
                           item.verdict === "DOĞRU"
-                            ? "text-emerald-700 border-emerald-200 bg-emerald-50"
+                            ? "text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10"
                             : item.verdict === "YANLIŞ"
-                            ? "text-rose-700 border-rose-200 bg-rose-50"
-                            : "text-amber-700 border-amber-200 bg-amber-50";
+                            ? "text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20 bg-rose-50 dark:bg-rose-500/10"
+                            : "text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/10";
 
                         return (
                           <div
@@ -613,14 +615,14 @@ export default function Home() {
                             }`}
                           >
                             <div
-                              className={`relative bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex-1 min-w-0 transition-transform duration-300 hover:rotate-0 ${tilt}`}
+                              className={`relative bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-2xs flex-1 min-w-0 transition-transform duration-300 hover:rotate-0 ${tilt}`}
                             >
                               <span
                                 aria-hidden="true"
-                                className="absolute -top-1.5 left-5 w-3 h-3 rounded-full bg-slate-300 border-2 border-white shadow-2xs"
+                                className="absolute -top-1.5 left-5 w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-600 border-2 border-white dark:border-slate-900 shadow-2xs"
                               />
                               <div className="flex items-start justify-between gap-3 mb-2">
-                                <span className="font-mono text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-md shrink-0 border border-slate-200/60">
+                                <span className="font-mono text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/60 px-2 py-1 rounded-md shrink-0 border border-slate-200/60 dark:border-slate-700/60">
                                   {String(idx + 1).padStart(2, "0")}
                                 </span>
                                 {item.verdict && (
@@ -631,8 +633,8 @@ export default function Home() {
                                   </span>
                                 )}
                               </div>
-                              <div className="font-bold text-slate-900 text-sm break-words">&quot;{item.claim}&quot;</div>
-                              <div className="text-slate-600 text-sm leading-relaxed break-words mt-1.5">
+                              <div className="font-bold text-slate-900 dark:text-slate-100 text-sm break-words">&quot;{item.claim}&quot;</div>
+                              <div className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed break-words mt-1.5">
                                 {item.verification}
                               </div>
                             </div>
@@ -643,7 +645,7 @@ export default function Home() {
                                 aria-hidden="true"
                               >
                                 <svg
-                                  className="w-5 h-5 text-slate-300 rotate-90 md:rotate-0"
+                                  className="w-5 h-5 text-slate-300 dark:text-slate-700 rotate-90 md:rotate-0"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -658,11 +660,11 @@ export default function Home() {
                                 href={linkedSource.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl p-3 md:w-56 shrink-0 flex flex-col justify-center transition-colors min-w-0 shadow-2xs"
+                                className="bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 md:w-56 shrink-0 flex flex-col justify-center transition-colors min-w-0 shadow-2xs"
                               >
                                 <div className="flex items-center gap-1.5 mb-1 min-w-0">
                                   <svg
-                                    className="w-3.5 h-3.5 text-blue-500 shrink-0"
+                                    className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 shrink-0"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -675,9 +677,9 @@ export default function Home() {
                                       d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
                                     />
                                   </svg>
-                                  <span className="text-[11px] font-bold text-slate-700 truncate">{linkedSource.title}</span>
+                                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate">{linkedSource.title}</span>
                                 </div>
-                                <span className="text-[10px] text-slate-400 truncate">{linkedSource.url}</span>
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{linkedSource.url}</span>
                               </a>
                             )}
                           </div>
@@ -687,13 +689,13 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="space-y-4 pt-6 border-t border-slate-100">
+                <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-slate-900 rounded-sm"></div>
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-slate-900 dark:bg-slate-100 rounded-sm"></div>
                       Doğrulama Kaynakları
                     </h3>
-                    <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-xl shrink-0 border border-slate-200/60">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-xl shrink-0 border border-slate-200/60 dark:border-slate-700/60">
                       {result.sources.length} Bağlantı
                     </span>
                   </div>
@@ -705,11 +707,11 @@ export default function Home() {
                         href={src.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group flex items-center gap-3 p-3 rounded-2xl border border-slate-200 hover:border-slate-400 bg-white hover:bg-slate-50 transition-colors min-w-0 shadow-2xs"
+                        className="group flex items-center gap-3 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors min-w-0 shadow-2xs"
                       >
-                        <div className="w-7 h-7 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 group-hover:bg-slate-200 transition-colors">
+                        <div className="w-7 h-7 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors">
                           <svg
-                            className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-700"
+                            className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -723,7 +725,7 @@ export default function Home() {
                             />
                           </svg>
                         </div>
-                        <span className="font-semibold text-sm text-slate-700 group-hover:text-slate-900 truncate">
+                        <span className="font-semibold text-sm text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 truncate">
                           {src.title}
                         </span>
                       </a>

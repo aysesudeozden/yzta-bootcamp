@@ -3,6 +3,7 @@
 import { useState, FormEvent, SVGProps } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ThemeToggle from "../components/ThemeToggle";
 
 function ShieldCheckIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -98,23 +99,26 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#161616] px-4 py-10">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#1c1c1c] p-8 shadow-2xl">
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-[#161616] px-4 py-10 transition-colors">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+        <ThemeToggle />
+      </div>
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#1c1c1c] p-8 shadow-xl dark:shadow-2xl transition-colors">
         <div className="flex flex-col items-center text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600">
             <ShieldCheckIcon className="h-7 w-7 text-white" />
           </div>
-          <h1 className="mt-4 text-xl font-semibold text-white">
+          <h1 className="mt-4 text-xl font-semibold text-slate-900 dark:text-white">
             Doğrulama asistanı
           </h1>
-          <p className="mt-1 text-sm text-gray-400">Hesabınıza giriş yapın</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">Hesabınıza giriş yapın</p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           <div>
             <label
               htmlFor="email"
-              className="mb-1.5 block text-sm font-medium text-gray-200"
+              className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-gray-200"
             >
               E-posta
             </label>
@@ -125,14 +129,14 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="ad.soyad@ornek.com"
-              className="w-full rounded-lg border border-white/10 bg-[#141414] px-3.5 py-2.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           <div>
             <label
               htmlFor="password"
-              className="mb-1.5 block text-sm font-medium text-gray-200"
+              className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-gray-200"
             >
               Şifre
             </label>
@@ -144,12 +148,12 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Şifrenizi girin"
-                className="w-full rounded-lg border border-white/10 bg-[#141414] px-3.5 py-2.5 pr-10 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-200"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
                 aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
               >
                 {showPassword ? (
@@ -162,13 +166,13 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-center justify-end text-sm">
-            <a href="#" className="font-medium text-blue-500 hover:text-blue-400">
+            <a href="#" className="font-medium text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400">
               Şifremi unuttum
             </a>
           </div>
 
           {error && (
-            <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-sm text-red-400">
+            <p className="rounded-lg border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
               {error}
             </p>
           )}
@@ -176,16 +180,16 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white py-2.5 text-sm font-semibold text-black transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-white py-2.5 text-sm font-semibold text-white dark:text-black transition hover:bg-slate-800 dark:hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <span aria-hidden>&rarr;</span>
             {loading ? "Giriş yapılıyor..." : "Giriş yap"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-400">
+        <p className="mt-6 text-center text-sm text-slate-500 dark:text-gray-400">
           Hesabınız yok mu?{" "}
-          <Link href="/register" className="font-medium text-blue-500 hover:text-blue-400">
+          <Link href="/register" className="font-medium text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400">
             Kayıt olun
           </Link>
         </p>
