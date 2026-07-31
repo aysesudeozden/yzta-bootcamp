@@ -32,6 +32,11 @@ DB_CONFIG = {
 }
 # Fact Check API bilgilerinin alındığı kısım 
 FACT_CHECK_API_KEY = os.getenv("FACT_CHECK_API_KEY")
+SERPER_API_KEY = os.getenv("SERPER_API_KEY")
+
+print(f"DEBUG STARTUP: GEMINI_API_KEY is {'SET' if api_key else 'NOT SET'}", flush=True)
+print(f"DEBUG STARTUP: FACT_CHECK_API_KEY is {'SET' if FACT_CHECK_API_KEY else 'NOT SET'}", flush=True)
+print(f"DEBUG STARTUP: SERPER_API_KEY is {'SET' if SERPER_API_KEY else 'NOT SET'}", flush=True)
 
 app = FastAPI(title="Fact-Check AI Orchestrator API", version="1.0.0")
 
@@ -96,7 +101,7 @@ def query_google_fact_check(claim: str) -> list:
     ve teyit edilmiş analiz sonuçlarını döner.
     """
     if not FACT_CHECK_API_KEY:
-        print("UYARI: FACT_CHECK_API_KEY bulunamadı!")
+        print("UYARI: FACT_CHECK_API_KEY bulunamadı!", flush=True)
         return []
 
     # API URL'ini ve parametreleri hazırlıyoruz (Türkçe teyit sitelerine odaklanması için languageCode='tr')
@@ -115,9 +120,9 @@ def query_google_fact_check(claim: str) -> list:
             data = json.loads(response.read().decode())
             claims = data.get("claims", [])
             
-            print("\n--- FACT CHECK API HAM YANITI ---")
-            print(data)
-            print("---------------------------------\n")
+            print("\n--- FACT CHECK API HAM YANITI ---", flush=True)
+            print(data, flush=True)
+            print("---------------------------------\n", flush=True)
 
             # Gelen karmaşık veriyi Gemini'ın kolayca anlayacağı sade bir listeye çeviriyoruz
             results = []
@@ -136,6 +141,45 @@ def query_google_fact_check(claim: str) -> list:
             return results
     except Exception as e:
         print(f"Google Fact Check API Hatası: {str(e)}")
+        return []
+
+def query_serper_search(claim: str) -> list:
+    """
+    Kullanıcının iddiasını Serper API (Google Search) kullanarak web'de arar.
+    """
+    if not SERPER_API_KEY:
+        print("UYARI: SERPER_API_KEY bulunamadı!", flush=True)
+        return []
+
+    url = "https://google.serper.dev/search"
+    headers = {
+        "X-API-KEY": SERPER_API_KEY,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "q": claim,
+        "gl": "tr",
+        "hl": "tr"
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=5)
+        if response.status_code == 200:
+            res_data = response.json()
+            organic = res_data.get("organic", [])
+            results = []
+            for item in organic[:3]: # En alakalı ilk 3 aramayı alıyoruz
+                results.append({
+                    "title": item.get("title", "Başlık Yok"),
+                    "url": item.get("link", ""),
+                    "snippet": item.get("snippet", "")
+                })
+            return results
+        else:
+            print(f"Serper API Hata Kodu: {response.status_code}", flush=True)
+            return []
+    except Exception as e:
+        print(f"Serper API Hatası: {str(e)}", flush=True)
         return []
     
 # --- API ENDPOINT ---
@@ -240,7 +284,6 @@ async def verify_claim(request: ClaimRequest):
     api_duration = end_api - start_api
 
     # 2. Adım: Gemini için Statik Prompt ve Web Verisi Hazırlığı
-    # Eğer web'de daha önce teyit edilmiş bir veri bulunduysa bunu prompt'a ekliyoruz
     evidence_text = ""
     if web_evidence:
         evidence_text = "\nGoogle Fact Check API'den bulunan doğrulanmış kaynaklar ve teyit raporları:\n"
@@ -253,7 +296,23 @@ async def verify_claim(request: ClaimRequest):
                 f"    Kaynak URL: {item['url']}\n\n"
             )
     else:
-        evidence_text = "\nGoogle Fact Check API üzerinde bu iddiaya dair doğrudan bir teyit raporu bulunamadı. Genel bilgilerinle analiz et.\n"
+        # Fallback: Google Fact Check'te bulunamazsa canlı web araması (Serper API) yap
+        print(f"Bilgi: Google Fact Check API sonucu boş. Serper API canlı araması başlatılıyor...", flush=True)
+        start_serper = time.perf_counter()
+        serper_evidence = query_serper_search(request.text)
+        end_serper = time.perf_counter()
+        api_duration += (end_serper - start_serper) # Performans süresine ekle
+
+        if serper_evidence:
+            evidence_text = "\nGoogle Fact Check üzerinde doğrudan teyit raporu bulunamadı. Ancak Canlı Web Arama Ajanı (Serper API) ile şu güncel internet bulguları ve haberler tespit edildi:\n"
+            for idx, item in enumerate(serper_evidence, 1):
+                evidence_text += (
+                    f"[{idx}] Haber/Kaynak Başlığı: {item['title']}\n"
+                    f"    İçerik Özeti (Snippet): {item['snippet']}\n"
+                    f"    Kaynak URL: {item['url']}\n\n"
+                )
+        else:
+            evidence_text = "\nHem Google Fact Check API hem de Serper canlı araması üzerinde bu iddiaya dair doğrudan bir bulguya ulaşılamadı. Genel bilgilerinle analiz et.\n"
 
     # Gemini'yi yönlendireceğimiz statik prompt yapısı
     system_instruction = f"""
@@ -268,11 +327,11 @@ async def verify_claim(request: ClaimRequest):
     2. Genel bir doğruluk skoru (0-100) ve objektif, akademik dille yazılmış bir özet (`summary`) üret.
     
     CRITICAL (ÇOK ÖNEMLİ - ZORUNLU KURAL):
-    Eğer yukarıda sana [Web Araştırma Bulguları] sağlandıysa, o bulguların içindeki "Kaynak URL" ve "Teyit Eden Kurum/Başlık" bilgilerini KESİNLİKLE ama KESİNLİKLE yanıtındaki `sources` listesine eklemelisin.
+    Eğer yukarıda sana [Web Araştırma Bulguları] sağlandıysa (Google Fact Check veya Serper arama bulguları), o bulguların içindeki "Kaynak URL" ve "Kaynak/Rapor Başlığı" bilgilerini KESİNLİKLE ama KESİNLİKLE yanıtındaki `sources` listesine eklemelisin.
     
     `sources` listesinin formatı tam olarak şöyle olmalıdır:
     [
-      {{ "title": "Teyit Eden Kurum Adı - Kaynak Rapor Başlığı", "url": "İlgili Kaynak URL'si" }}
+      {{ "title": "Kaynak/Yayıncı Adı - Başlık", "url": "İlgili Kaynak URL'si" }}
     ]
     
     Yanıtını kesinlikle verilen JSON şemasına (VerificationResponse) uygun şekilde üret.
@@ -316,12 +375,12 @@ async def verify_claim(request: ClaimRequest):
         end_total = time.perf_counter()
         total_duration = end_total - start_total
 
-        print("\n================ PERFORMANS ANALİZ RAPORU ================")
-        print(f"Aranan İddia       : '{request.text[:50]}...'")
-        print(f"Fact Check API Süresi: {api_duration:.4f} saniye")
-        print(f"Gemini Analiz Süresi: {gemini_duration:.4f} saniye")
-        print(f"Toplam İşlem Süresi  : {total_duration:.4f} saniye")
-        print("==========================================================\n")
+        print("\n================ PERFORMANS ANALİZ RAPORU ================", flush=True)
+        print(f"Aranan İddia       : '{request.text[:50]}...'", flush=True)
+        print(f"Fact Check & Arama Süresi: {api_duration:.4f} saniye", flush=True)
+        print(f"Gemini Analiz Süresi: {gemini_duration:.4f} saniye", flush=True)
+        print(f"Toplam İşlem Süresi  : {total_duration:.4f} saniye", flush=True)
+        print("==========================================================\n", flush=True)
 
         return VerificationResponse.model_validate_json(response.text)
 
