@@ -341,7 +341,7 @@ async def verify_claim(request: ClaimRequest):
         # 3. Adım: Gemini Analiz Süreci
         start_gemini = time.perf_counter()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.6-flash',
             contents=request.text,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
@@ -362,7 +362,7 @@ async def verify_claim(request: ClaimRequest):
                     INSERT INTO chats (user_id, message, response, model)
                     VALUES (%s, %s, %s, %s)
                     """,
-                    (request.user_id, request.text, response.text, 'gemini-2.5-flash')
+                    (request.user_id, request.text, response.text, 'gemini-3.6-flash')
                 )
             conn.commit()
         except Exception as db_err:
@@ -385,8 +385,10 @@ async def verify_claim(request: ClaimRequest):
         return VerificationResponse.model_validate_json(response.text)
 
     except Exception as e:
-        print(f"Hata Oluştu: {str(e)}")
-        raise HTTPException(status_code=500, detail="Yapay zeka analiz ajanları şu anda yanıt veremiyor.")
+        import traceback
+        tb = traceback.format_exc()
+        print(f"HATA DETAYI:\n{tb}", flush=True)
+        raise HTTPException(status_code=500, detail=f"HATA: {str(e)}")
 
 @app.get("/api/history")
 def get_history(user_id: int = Query(...)):
