@@ -20,7 +20,7 @@ load_dotenv(BASE_DIR / ".env.local")
 load_dotenv(BASE_DIR.parent / ".env.local")
 load_dotenv(BASE_DIR.parent / ".env")
 
-api_key = os.getenv("GEMINI_API_KEY")
+api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API")
 
 client = genai.Client(api_key=api_key) if api_key else None
 
@@ -36,8 +36,8 @@ def get_db_connection():
         dbname=os.getenv("DB_NAME", "bootcamp_db"),
     )
 
-FACT_CHECK_API_KEY = os.getenv("FACT_CHECK_API_KEY")
-SERPER_API_KEY = os.getenv("SERPER_API_KEY")
+FACT_CHECK_API_KEY = os.getenv("FACT_CHECK_API_KEY") or os.getenv("FACT_CHECK_API")
+SERPER_API_KEY = os.getenv("SERPER_API_KEY") or os.getenv("SERPER_API") or os.getenv("SERPER_KEY")
 
 print(f"DEBUG STARTUP: GEMINI_API_KEY is {'SET' if api_key else 'NOT SET'}", flush=True)
 print(f"DEBUG STARTUP: FACT_CHECK_API_KEY is {'SET' if FACT_CHECK_API_KEY else 'NOT SET'}", flush=True)
@@ -148,13 +148,14 @@ def query_google_fact_check(claim: str) -> list:
         return []
 
 def query_serper_search(claim: str) -> list:
-    if not SERPER_API_KEY:
-        print("UYARI: SERPER_API_KEY bulunamadı!", flush=True)
+    serper_key = os.getenv("SERPER_API_KEY") or os.getenv("SERPER_API") or os.getenv("SERPER_KEY") or SERPER_API_KEY
+    if not serper_key:
+        print("UYARI: SERPER_API_KEY / SERPER_API bulunamadı!", flush=True)
         return []
 
     url = "https://google.serper.dev/search"
     headers = {
-        "X-API-KEY": SERPER_API_KEY,
+        "X-API-KEY": serper_key,
         "Content-Type": "application/json"
     }
     payload = {
@@ -169,15 +170,17 @@ def query_serper_search(claim: str) -> list:
             res_data = response.json()
             organic = res_data.get("organic", [])
             results = []
-            for item in organic[:3]:
-                results.append({
-                    "title": item.get("title", "Başlık Yok"),
-                    "url": item.get("link", ""),
-                    "snippet": item.get("snippet", "")
-                })
+            for item in organic[:4]:
+                url_link = item.get("link", "")
+                if url_link:
+                    results.append({
+                        "title": item.get("title", "Haber Kaynağı"),
+                        "url": url_link,
+                        "snippet": item.get("snippet", "")
+                    })
             return results
         else:
-            print(f"Serper API Hata Kodu: {response.status_code}", flush=True)
+            print(f"Serper API Hata Kodu: {response.status_code} - {response.text}", flush=True)
             return []
     except Exception as e:
         print(f"Serper API Hatası: {str(e)}", flush=True)
@@ -374,7 +377,23 @@ async def verify_claim(request: ClaimRequest):
         print(f"Toplam İşlem Süresi  : {total_duration:.4f} saniye", flush=True)
         print("==========================================================\n", flush=True)
 
-        return VerificationResponse.model_validate_json(response.text)
+        parsed_result = VerificationResponse.model_validate_json(response.text)
+
+        # Garantili Kaynak Tamamlama:
+        # Eğer Gemini LLM yanıtındaki sources listesi boşsa, Serper veya Fact Check API ile bulunan gerçek bağlantıları ekle
+        if not parsed_result.sources:
+            fallback_sources = []
+            if web_evidence:
+                for item in web_evidence:
+                    if item.get("url"):
+                        fallback_sources.append(SourceItem(title=f"{item.get('publisher', 'Kaynak')}: {item.get('title', 'Teyit Raporu')}", url=item.get("url")))
+            elif 'serper_evidence' in locals() and serper_evidence:
+                for item in serper_evidence:
+                    if item.get("url"):
+                        fallback_sources.append(SourceItem(title=item.get("title", "Web Kaynağı"), url=item.get("url")))
+            parsed_result.sources = fallback_sources
+
+        return parsed_result
 
     except Exception as e:
         print(f"Hata Oluştu: {str(e)}", flush=True)
