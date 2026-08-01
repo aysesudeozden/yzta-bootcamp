@@ -17,27 +17,37 @@ import requests
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env.local")
+load_dotenv(BASE_DIR.parent / ".env.local")
 load_dotenv(BASE_DIR.parent / ".env")
 
-api_key = os.getenv("GEMINI_API_KEY")
+api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API")
 
 client = genai.Client(api_key=api_key) if api_key else None
 
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "port": int(os.getenv("DB_PORT", "5432")),
-    "user": os.getenv("DB_USER", "admin"),
-    "password": os.getenv("DB_PASSWORD", "secretpassword"),
-    "dbname": os.getenv("DB_NAME", "bootcamp_db"),
-}
-# Fact Check API bilgilerinin alındığı kısım 
-FACT_CHECK_API_KEY = os.getenv("FACT_CHECK_API_KEY")
+def get_db_connection():
+    db_url = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL")
+    if db_url:
+        return psycopg2.connect(db_url)
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST", "localhost"),
+        port=int(os.getenv("DB_PORT", "5432")),
+        user=os.getenv("DB_USER", "admin"),
+        password=os.getenv("DB_PASSWORD", "secretpassword"),
+        dbname=os.getenv("DB_NAME", "bootcamp_db"),
+    )
+
+FACT_CHECK_API_KEY = os.getenv("FACT_CHECK_API_KEY") or os.getenv("FACT_CHECK_API")
+SERPER_API_KEY = os.getenv("SERPER_API_KEY") or os.getenv("SERPER_API") or os.getenv("SERPER_KEY")
+
+print(f"DEBUG STARTUP: GEMINI_API_KEY is {'SET' if api_key else 'NOT SET'}", flush=True)
+print(f"DEBUG STARTUP: FACT_CHECK_API_KEY is {'SET' if FACT_CHECK_API_KEY else 'NOT SET'}", flush=True)
+print(f"DEBUG STARTUP: SERPER_API_KEY is {'SET' if SERPER_API_KEY else 'NOT SET'}", flush=True)
 
 app = FastAPI(title="Fact-Check AI Orchestrator API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -78,28 +88,33 @@ class LoginResponse(BaseModel):
     surname: str
     email: str
     role: str
-    
+
+# --- DÜZELTME: Admin panelinin (frontend) beklediği alan isimleriyle
+# birebir eşleşecek şekilde güncellendi. Önceki hali (claim_text,
+# ai_response, created_at, model/user_id/user_email alanları hiç yok)
+# frontend'in "message, response, model, created_date, user_id, user_email"
+# beklentisiyle uyuşmuyordu.
 class ChatLogItem(BaseModel):
     id: int
-    user_name: str
-    user_surname: str
-    claim_text: str
-    ai_response: str
-    created_at: str # Tarih verisi string olarak gidecek
+    user_id: int
+    message: str
+    response: str
+    model: str
+    created_date: str
+    user_name: str | None = "Kullanıcı"
+    user_surname: str | None = ""
+    user_email: str | None = ""
 
+# --- DÜZELTME: Frontend `data.chats` okuyordu, backend `logs` dönüyordu —
+# bu tek başına admin panelinin her zaman boş görünmesine yetiyordu.
 class AdminLogsResponse(BaseModel):
-    logs: list[ChatLogItem]
+    chats: list[ChatLogItem]
 
 def query_google_fact_check(claim: str) -> list:
-    """
-    Kullanıcının iddiasını Google Fact Check Tools API'sinde arar
-    ve teyit edilmiş analiz sonuçlarını döner.
-    """
     if not FACT_CHECK_API_KEY:
-        print("UYARI: FACT_CHECK_API_KEY bulunamadı!")
+        print("UYARI: FACT_CHECK_API_KEY bulunamadı!", flush=True)
         return []
 
-    # API URL'ini ve parametreleri hazırlıyoruz (Türkçe teyit sitelerine odaklanması için languageCode='tr')
     base_url = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
     params = {
         "query": claim,
@@ -110,18 +125,12 @@ def query_google_fact_check(claim: str) -> list:
     full_url = f"{base_url}?{url_parts}"
 
     try:
-        # API'ye istek atıyoruz
         with urllib.request.urlopen(full_url, timeout=5) as response:
             data = json.loads(response.read().decode())
             claims = data.get("claims", [])
             
-            print("\n--- FACT CHECK API HAM YANITI ---")
-            print(data)
-            print("---------------------------------\n")
-
-            # Gelen karmaşık veriyi Gemini'ın kolayca anlayacağı sade bir listeye çeviriyoruz
             results = []
-            for c in claims[:3]: # En alakalı ilk 3 teyit sonucunu alıyoruz
+            for c in claims[:3]:
                 reviews = c.get("claimReview", [])
                 if reviews:
                     review = reviews[0]
@@ -137,11 +146,49 @@ def query_google_fact_check(claim: str) -> list:
     except Exception as e:
         print(f"Google Fact Check API Hatası: {str(e)}")
         return []
+
+def query_serper_search(claim: str) -> list:
+    serper_key = os.getenv("SERPER_API_KEY") or os.getenv("SERPER_API") or os.getenv("SERPER_KEY") or SERPER_API_KEY
+    if not serper_key:
+        print("UYARI: SERPER_API_KEY / SERPER_API bulunamadı!", flush=True)
+        return []
+
+    url = "https://google.serper.dev/search"
+    headers = {
+        "X-API-KEY": serper_key,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "q": claim,
+        "gl": "tr",
+        "hl": "tr"
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=5)
+        if response.status_code == 200:
+            res_data = response.json()
+            organic = res_data.get("organic", [])
+            results = []
+            for item in organic[:4]:
+                url_link = item.get("link", "")
+                if url_link:
+                    results.append({
+                        "title": item.get("title", "Haber Kaynağı"),
+                        "url": url_link,
+                        "snippet": item.get("snippet", "")
+                    })
+            return results
+        else:
+            print(f"Serper API Hata Kodu: {response.status_code} - {response.text}", flush=True)
+            return []
+    except Exception as e:
+        print(f"Serper API Hatası: {str(e)}", flush=True)
+        return []
     
-# --- API ENDPOINT ---
 def verify_admin_role(admin_id: int):
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
     except psycopg2.OperationalError:
         raise HTTPException(status_code=503, detail="Veritabanı bağlantı hatası.")
 
@@ -160,7 +207,7 @@ def verify_admin_role(admin_id: int):
 @app.post("/api/login", response_model=LoginResponse)
 def login(request: LoginRequest):
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
     except psycopg2.OperationalError:
         raise HTTPException(status_code=503, detail="Veritabanına bağlanılamadı.")
 
@@ -195,7 +242,7 @@ def register(request: RegisterRequest):
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
     except psycopg2.OperationalError:
         raise HTTPException(status_code=503, detail="Veritabanına bağlanılamadı.")
 
@@ -230,18 +277,15 @@ async def verify_claim(request: ClaimRequest):
 
     await asyncio.sleep(1.0)
 
-    # --- PERFORMANS ANALİZİ BAŞLANGICI ---
     start_total = time.perf_counter()
 
-    # 1. Adım: Google Fact Check Tools API'den teyit verilerini çek
     start_api = time.perf_counter()
     web_evidence = query_google_fact_check(request.text)
     end_api = time.perf_counter()
     api_duration = end_api - start_api
 
-    # 2. Adım: Gemini için Statik Prompt ve Web Verisi Hazırlığı
-    # Eğer web'de daha önce teyit edilmiş bir veri bulunduysa bunu prompt'a ekliyoruz
     evidence_text = ""
+    serper_evidence = []
     if web_evidence:
         evidence_text = "\nGoogle Fact Check API'den bulunan doğrulanmış kaynaklar ve teyit raporları:\n"
         for idx, item in enumerate(web_evidence, 1):
@@ -253,9 +297,23 @@ async def verify_claim(request: ClaimRequest):
                 f"    Kaynak URL: {item['url']}\n\n"
             )
     else:
-        evidence_text = "\nGoogle Fact Check API üzerinde bu iddiaya dair doğrudan bir teyit raporu bulunamadı. Genel bilgilerinle analiz et.\n"
+        print(f"Bilgi: Google Fact Check API sonucu boş. Serper API canlı araması başlatılıyor...", flush=True)
+        start_serper = time.perf_counter()
+        serper_evidence = query_serper_search(request.text)
+        end_serper = time.perf_counter()
+        api_duration += (end_serper - start_serper)
 
-    # Gemini'yi yönlendireceğimiz statik prompt yapısı
+        if serper_evidence:
+            evidence_text = "\nGoogle Fact Check üzerinde doğrudan teyit raporu bulunamadı. Ancak Canlı Web Arama Ajanı (Serper API) ile şu güncel internet bulguları ve haberler tespit edildi:\n"
+            for idx, item in enumerate(serper_evidence, 1):
+                evidence_text += (
+                    f"[{idx}] Haber/Kaynak Başlığı: {item['title']}\n"
+                    f"    İçerik Özeti (Snippet): {item['snippet']}\n"
+                    f"    Kaynak URL: {item['url']}\n\n"
+                )
+        else:
+            evidence_text = "\nHem Google Fact Check API hem de Serper canlı araması üzerinde bu iddiaya dair doğrudan bir bulguya ulaşılamadı. Genel bilgilerinle analiz et.\n"
+
     system_instruction = f"""
     Sen üst düzey bir Otonom Gerçek Zamanlı Doğrulama (Fact-Check) Orkestratörüsün.
     Aşağıda sana sunulan [Web Araştırma Bulguları] ve kullanıcının girdiği [İddia Metni]'ni karşılaştırarak profesyonel bir analiz yapacaksın.
@@ -268,42 +326,73 @@ async def verify_claim(request: ClaimRequest):
     2. Genel bir doğruluk skoru (0-100) ve objektif, akademik dille yazılmış bir özet (`summary`) üret.
     
     CRITICAL (ÇOK ÖNEMLİ - ZORUNLU KURAL):
-    Eğer yukarıda sana [Web Araştırma Bulguları] sağlandıysa, o bulguların içindeki "Kaynak URL" ve "Teyit Eden Kurum/Başlık" bilgilerini KESİNLİKLE ama KESİNLİKLE yanıtındaki `sources` listesine eklemelisin.
+    Eğer yukarıda sana [Web Araştırma Bulguları] sağlandıysa, o bulguların içindeki "Kaynak URL" ve "Kaynak/Rapor Başlığı" bilgilerini KESİNLİKLE ama KESİNLİKLE yanıtındaki `sources` listesine eklemelisin.
     
     `sources` listesinin formatı tam olarak şöyle olmalıdır:
     [
-      {{ "title": "Teyit Eden Kurum Adı - Kaynak Rapor Başlığı", "url": "İlgili Kaynak URL'si" }}
+      {{ "title": "Kaynak/Yayıncı Adı - Başlık", "url": "İlgili Kaynak URL'si" }}
     ]
     
     Yanıtını kesinlikle verilen JSON şemasına (VerificationResponse) uygun şekilde üret.
     """
 
     try:
-        # 3. Adım: Gemini Analiz Süreci
         start_gemini = time.perf_counter()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.6-flash',
             contents=request.text,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 response_mime_type="application/json",
                 response_schema=VerificationResponse,
-                temperature=0.1, # En gerçekçi ve olgusal analiz için sıcaklığı daha da düşürdük
+                temperature=0.1,
             ),
         )
         end_gemini = time.perf_counter()
         gemini_duration = end_gemini - start_gemini
 
+        end_total = time.perf_counter()
+        total_duration = end_total - start_total
+
+        print("\n================ PERFORMANS ANALİZ RAPORU ================", flush=True)
+        print(f"Aranan İddia       : '{request.text[:50]}...'", flush=True)
+        print(f"Fact Check & Arama Süresi: {api_duration:.4f} saniye", flush=True)
+        print(f"Gemini Analiz Süresi: {gemini_duration:.4f} saniye", flush=True)
+        print(f"Toplam İşlem Süresi  : {total_duration:.4f} saniye", flush=True)
+        print("==========================================================\n", flush=True)
+
+        parsed_result = VerificationResponse.model_validate_json(response.text)
+
+        # Garantili Kaynak Tamamlama:
+        # Arama motorlarının bulduğu TÜM gerçek bağlantıları parsed_result.sources içine birleştir
+        collected_sources = []
+        if web_evidence:
+            for item in web_evidence:
+                if item.get("url"):
+                    collected_sources.append(SourceItem(title=f"{item.get('publisher', 'Kaynak')}: {item.get('title', 'Teyit Raporu')}", url=item.get("url")))
+        if serper_evidence:
+            for item in serper_evidence:
+                if item.get("url"):
+                    collected_sources.append(SourceItem(title=item.get("title", "Web Kaynağı"), url=item.get("url")))
+
+        existing_urls = {s.url for s in parsed_result.sources if s.url}
+        for src in collected_sources:
+            if src.url not in existing_urls:
+                parsed_result.sources.append(src)
+                existing_urls.add(src.url)
+
+        # Veritabanına da kaynakları eksiksiz JSON olarak kaydet
+        final_json_str = parsed_result.model_dump_json()
+
         try:
-            conn = psycopg2.connect(**DB_CONFIG)
+            conn = get_db_connection()
             with conn.cursor() as cur:
-                # DİKKAT: init.sql'e göre chats tablosu ve model kolonu kullanıldı.
                 cur.execute(
                     """
                     INSERT INTO chats (user_id, message, response, model)
                     VALUES (%s, %s, %s, %s)
                     """,
-                    (request.user_id, request.text, response.text, 'gemini-2.5-flash')
+                    (request.user_id, request.text, final_json_str, 'gemini-2.0-flash')
                 )
             conn.commit()
         except Exception as db_err:
@@ -312,29 +401,17 @@ async def verify_claim(request: ClaimRequest):
             if 'conn' in locals():
                 conn.close()
 
-        # --- PERFORMANS METRİKLERİNİN HESAPLANMASI ---
-        end_total = time.perf_counter()
-        total_duration = end_total - start_total
-
-        print("\n================ PERFORMANS ANALİZ RAPORU ================")
-        print(f"Aranan İddia       : '{request.text[:50]}...'")
-        print(f"Fact Check API Süresi: {api_duration:.4f} saniye")
-        print(f"Gemini Analiz Süresi: {gemini_duration:.4f} saniye")
-        print(f"Toplam İşlem Süresi  : {total_duration:.4f} saniye")
-        print("==========================================================\n")
-
-        return VerificationResponse.model_validate_json(response.text)
+        return parsed_result
 
     except Exception as e:
-        print(f"Hata Oluştu: {str(e)}")
-        raise HTTPException(status_code=500, detail="Yapay zeka analiz ajanları şu anda yanıt veremiyor.")
+        print(f"Hata Oluştu: {str(e)}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Yapay zeka analiz hatası: {str(e)}")
 
 @app.get("/api/history")
 def get_history(user_id: int = Query(...)):
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
         with conn.cursor() as cur:
-            # DİKKAT: init.sql'e göre chats tablosu ve created_date kolonu kullanıldı.
             cur.execute(
                 """
                 SELECT id, message, response, created_date 
@@ -364,41 +441,46 @@ def get_history(user_id: int = Query(...)):
         if 'conn' in locals():
             conn.close()
 
+# --- DÜZELTME: SELECT'e c.user_id, c.model, u.email eklendi (önceden hiç
+# çekilmiyordu); ChatLogItem artık frontend'in beklediği alan adlarıyla
+# dolduruluyor; en sonda "logs=" değil "chats=" ile dönülüyor.
 @app.get("/api/admin/logs", response_model=AdminLogsResponse)
 def get_admin_logs(admin_id: int = Depends(verify_admin_role)):
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
     except psycopg2.OperationalError:
         raise HTTPException(status_code=503, detail="Veritabanına bağlanılamadı.")
 
     try:
         with conn.cursor() as cur:
-            # Kolon isimleri init.sql ile uyumlu hale getirildi (message, response, created_date)
             cur.execute("""
-                SELECT c.id, u.name, u.surname, c.message, c.response, c.created_date
+                SELECT c.id, c.user_id, c.message, c.response, c.model, c.created_date,
+                       u.name, u.surname, u.email
                 FROM chats c
                 JOIN users u ON c.user_id = u.id
                 ORDER BY c.created_date DESC
             """)
             rows = cur.fetchall()
             
-            # Veritabanından gelen satırları Pydantic listesine çeviriyoruz
-            logs_list = []
+            chats_list = []
             for row in rows:
-                logs_list.append(
+                chats_list.append(
                     ChatLogItem(
                         id=row[0],
-                        user_name=row[1],
-                        user_surname=row[2],
-                        claim_text=row[3],     # Veritabanındaki c.message buraya eşleşti
-                        ai_response=row[4],    # Veritabanındaki c.response buraya eşleşti
-                        created_at=str(row[5]) # Veritabanındaki c.created_date buraya eşleşti
+                        user_id=row[1],
+                        message=row[2],
+                        response=row[3],
+                        model=row[4] or "gemini-2.0-flash",
+                        created_date=str(row[5]),
+                        user_name=row[6] or "Kullanıcı",
+                        user_surname=row[7] or "",
+                        user_email=row[8] or "",
                     )
                 )
     finally:
         conn.close()
 
-    return AdminLogsResponse(logs=logs_list)
+    return AdminLogsResponse(chats=chats_list)
 
 if __name__ == "__main__":
     import uvicorn

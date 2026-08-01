@@ -1,4 +1,12 @@
-const API_BASE_URL = "http://localhost:8000/api";
+const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    return "http://localhost:8000/api";
+  }
+  return "/api";
+};
 
 /** HTTP status kodunu taşıyan hata sınıfı — çağıran taraf 401/403 gibi durumları ayırt edebilsin diye. */
 export class ApiError extends Error {
@@ -20,7 +28,7 @@ export async function verifyClaimText(
   options: VerifyOptions = {}
 ) {
   try {
-    const response = await fetch(`${API_BASE_URL}/verify`, {
+    const response = await fetch(`${getApiBaseUrl()}/verify`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -53,7 +61,7 @@ export async function verifyClaimText(
 
 export async function fetchHistory(userId: number = 1, options: VerifyOptions = {}) {
   try {
-    const response = await fetch(`${API_BASE_URL}/history?user_id=${userId}`, {
+    const response = await fetch(`${getApiBaseUrl()}/history?user_id=${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

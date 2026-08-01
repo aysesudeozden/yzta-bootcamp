@@ -3,6 +3,7 @@
 import { useState, FormEvent, SVGProps } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ThemeToggle from "../components/ThemeToggle";
 
 function UserIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -128,7 +129,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/api/register", {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== "undefined" && window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api");
+      const res = await fetch(`${baseUrl}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, surname, email, password }),
@@ -155,12 +157,15 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#161616] px-4 py-10">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#1c1c1c] p-8 shadow-2xl">
-        <h1 className="text-2xl font-bold text-white">Hesap oluştur</h1>
-        <p className="mt-1.5 text-sm text-gray-400">
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-[#161616] px-4 py-10 transition-colors">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+        <ThemeToggle />
+      </div>
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#1c1c1c] p-8 shadow-xl dark:shadow-2xl transition-colors">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Hesap oluştur</h1>
+        <p className="mt-1.5 text-sm text-slate-500 dark:text-gray-400">
           Zaten hesabın var mı?{" "}
-          <Link href="/login" className="font-medium text-blue-500 hover:text-blue-400">
+          <Link href="/login" className="font-medium text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400">
             Giriş yap
           </Link>
         </p>
@@ -170,12 +175,12 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="name"
-                className="mb-1.5 block text-sm font-medium text-gray-200"
+                className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-gray-200"
               >
                 Ad
               </label>
               <div className="relative">
-                <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                 <input
                   id="name"
                   type="text"
@@ -183,19 +188,19 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ahmet"
-                  className="w-full rounded-lg border border-white/10 bg-[#141414] py-2.5 pl-9 pr-3.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] py-2.5 pl-9 pr-3.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
             <div>
               <label
                 htmlFor="surname"
-                className="mb-1.5 block text-sm font-medium text-gray-200"
+                className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-gray-200"
               >
                 Soyad
               </label>
               <div className="relative">
-                <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                 <input
                   id="surname"
                   type="text"
@@ -203,7 +208,7 @@ export default function RegisterPage() {
                   value={surname}
                   onChange={(e) => setSurname(e.target.value)}
                   placeholder="Yılmaz"
-                  className="w-full rounded-lg border border-white/10 bg-[#141414] py-2.5 pl-9 pr-3.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] py-2.5 pl-9 pr-3.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -212,12 +217,12 @@ export default function RegisterPage() {
           <div>
             <label
               htmlFor="email"
-              className="mb-1.5 block text-sm font-medium text-gray-200"
+              className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-gray-200"
             >
               E-posta
             </label>
             <div className="relative">
-              <MailIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              <MailIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
               <input
                 id="email"
                 type="email"
@@ -225,7 +230,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ahmet@sirket.com"
-                className="w-full rounded-lg border border-white/10 bg-[#141414] py-2.5 pl-9 pr-3.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] py-2.5 pl-9 pr-3.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -233,12 +238,12 @@ export default function RegisterPage() {
           <div>
             <label
               htmlFor="password"
-              className="mb-1.5 block text-sm font-medium text-gray-200"
+              className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-gray-200"
             >
               Şifre
             </label>
             <div className="relative">
-              <LockIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              <LockIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -246,12 +251,12 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="En az 8 karakter"
-                className="w-full rounded-lg border border-white/10 bg-[#141414] py-2.5 pl-9 pr-10 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#141414] py-2.5 pl-9 pr-10 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-200"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200"
                 aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
               >
                 {showPassword ? (
@@ -265,30 +270,29 @@ export default function RegisterPage() {
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className={`h-1 flex-1 rounded-full transition ${
-                    i < strength ? STRENGTH_COLORS[strength - 1] : "bg-white/10"
-                  }`}
+                  className={`h-1 flex-1 rounded-full transition ${i < strength ? STRENGTH_COLORS[strength - 1] : "bg-slate-200 dark:bg-white/10"
+                    }`}
                 />
               ))}
             </div>
-            <p className="mt-1.5 text-xs text-gray-500">
+            <p className="mt-1.5 text-xs text-slate-500 dark:text-gray-500">
               En az 8 karakter, 1 sayı ve 1 büyük harf.
             </p>
           </div>
 
-          <label className="flex cursor-pointer items-start gap-2.5 text-sm text-gray-300">
+          <label className="flex cursor-pointer items-start gap-2.5 text-sm text-slate-600 dark:text-gray-300">
             <input
               type="checkbox"
               checked={termsAccepted}
               onChange={() => setTermsAccepted((v) => !v)}
-              className="mt-0.5 h-4 w-4 rounded border-white/20 bg-[#141414] accent-blue-600"
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-[#141414] accent-blue-600"
             />
             <span>
-              <a href="#" className="text-blue-500 hover:text-blue-400">
+              <a href="#" className="text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400">
                 Kullanım koşullarını
               </a>{" "}
               ve{" "}
-              <a href="#" className="text-blue-500 hover:text-blue-400">
+              <a href="#" className="text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400">
                 gizlilik politikasını
               </a>{" "}
               kabul ediyorum.
@@ -296,7 +300,7 @@ export default function RegisterPage() {
           </label>
 
           {error && (
-            <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-sm text-red-400">
+            <p className="rounded-lg border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400">
               {error}
             </p>
           )}
@@ -304,7 +308,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={!termsAccepted || loading}
-            className="w-full rounded-lg bg-white py-2.5 text-sm font-semibold text-black transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:bg-[#2a2a2a] disabled:text-gray-500"
+            className="w-full rounded-lg bg-slate-900 dark:bg-white py-2.5 text-sm font-semibold text-white dark:text-black transition hover:bg-slate-800 dark:hover:bg-gray-200 disabled:cursor-not-allowed disabled:bg-slate-200 dark:disabled:bg-[#2a2a2a] disabled:text-slate-400 dark:disabled:text-gray-500"
           >
             {loading ? "Hesap oluşturuluyor..." : "Hesabı oluştur"}
           </button>
