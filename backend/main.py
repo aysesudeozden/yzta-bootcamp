@@ -47,7 +47,7 @@ app = FastAPI(title="Fact-Check AI Orchestrator API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -355,7 +355,7 @@ async def verify_claim(request: ClaimRequest):
                     INSERT INTO chats (user_id, message, response, model)
                     VALUES (%s, %s, %s, %s)
                     """,
-                    (request.user_id, request.text, response.text, 'gemini-3.6-flash')
+                    (request.user_id, request.text, response.text, 'gemini-2.0-flash')
                 )
             conn.commit()
         except Exception as db_err:
@@ -377,8 +377,8 @@ async def verify_claim(request: ClaimRequest):
         return VerificationResponse.model_validate_json(response.text)
 
     except Exception as e:
-        print(f"Hata Oluştu: {str(e)}")
-        raise HTTPException(status_code=500, detail="Yapay zeka analiz ajanları şu anda yanıt veremiyor.")
+        print(f"Hata Oluştu: {str(e)}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Yapay zeka analiz hatası: {str(e)}")
 
 @app.get("/api/history")
 def get_history(user_id: int = Query(...)):
@@ -443,7 +443,7 @@ def get_admin_logs(admin_id: int = Depends(verify_admin_role)):
                         user_id=row[1],
                         message=row[2],
                         response=row[3],
-                        model=row[4] or "gemini-3.6-flash",
+                        model=row[4] or "gemini-2.0-flash",
                         created_date=str(row[5]),
                         user_name=row[6] or "Kullanıcı",
                         user_surname=row[7] or "",

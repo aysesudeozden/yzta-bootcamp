@@ -607,7 +607,7 @@ export default function AdminLogsPage() {
 
         const userIdText = `usr_${data.user_id || 1}xK`;
         const userNameText = `${data.user_name || "Kullanıcı"} ${data.user_surname || ""}`.trim();
-        const modelName = data.model || "gemini-2.5-flash";
+        const modelName = data.model || "gemini-2.0-flash";
         const dateText = formatDate(data.created_date);
 
         const claimText = data.message;

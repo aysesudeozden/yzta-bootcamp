@@ -31,7 +31,7 @@ export async function saveFactCheck({ claim, status, confidenceScore, summary, c
 }
 
 // 3. Chat Mesajını Kaydetme
-export async function saveChat(userId, message, response, model = 'gemini-2.5-flash') {
+export async function saveChat(userId, message, response, model = 'gemini-2.0-flash') {
     const result = await sql`
     INSERT INTO chats (user_id, message, response, model)
     VALUES (${userId}, ${message}, ${response}, ${model})

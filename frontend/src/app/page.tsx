@@ -222,7 +222,11 @@ export default function Home() {
       }
 
       if (err instanceof Error) {
-        setError(err.message || "Sistem analizi sırasında bir anomali tespit edildi.");
+        if (err.message.includes("Failed to fetch") || err.message.includes("fetch failed")) {
+          setError("Backend sunucusuna ulaşılamadı (http://localhost:8000). Lütfen Python backend sunucusunun (uvicorn) çalıştığından emin olun.");
+        } else {
+          setError(err.message || "Sistem analizi sırasında bir anomali tespit edildi.");
+        }
       } else {
         setError("Sunucu ile iletişim kurulamadı. Beklenmeyen hata.");
       }
