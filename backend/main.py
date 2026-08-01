@@ -285,6 +285,7 @@ async def verify_claim(request: ClaimRequest):
     api_duration = end_api - start_api
 
     evidence_text = ""
+    serper_evidence = []
     if web_evidence:
         evidence_text = "\nGoogle Fact Check API'den bulunan doğrulanmış kaynaklar ve teyit raporları:\n"
         for idx, item in enumerate(web_evidence, 1):
@@ -350,23 +351,6 @@ async def verify_claim(request: ClaimRequest):
         end_gemini = time.perf_counter()
         gemini_duration = end_gemini - start_gemini
 
-        try:
-            conn = get_db_connection()
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    INSERT INTO chats (user_id, message, response, model)
-                    VALUES (%s, %s, %s, %s)
-                    """,
-                    (request.user_id, request.text, response.text, 'gemini-2.0-flash')
-                )
-            conn.commit()
-        except Exception as db_err:
-            print(f"DB Error: {str(db_err)}")
-        finally:
-            if 'conn' in locals():
-                conn.close()
-
         end_total = time.perf_counter()
         total_duration = end_total - start_total
 
@@ -380,18 +364,42 @@ async def verify_claim(request: ClaimRequest):
         parsed_result = VerificationResponse.model_validate_json(response.text)
 
         # Garantili Kaynak Tamamlama:
-        # Eğer Gemini LLM yanıtındaki sources listesi boşsa, Serper veya Fact Check API ile bulunan gerçek bağlantıları ekle
-        if not parsed_result.sources:
-            fallback_sources = []
-            if web_evidence:
-                for item in web_evidence:
-                    if item.get("url"):
-                        fallback_sources.append(SourceItem(title=f"{item.get('publisher', 'Kaynak')}: {item.get('title', 'Teyit Raporu')}", url=item.get("url")))
-            elif 'serper_evidence' in locals() and serper_evidence:
-                for item in serper_evidence:
-                    if item.get("url"):
-                        fallback_sources.append(SourceItem(title=item.get("title", "Web Kaynağı"), url=item.get("url")))
-            parsed_result.sources = fallback_sources
+        # Arama motorlarının bulduğu TÜM gerçek bağlantıları parsed_result.sources içine birleştir
+        collected_sources = []
+        if web_evidence:
+            for item in web_evidence:
+                if item.get("url"):
+                    collected_sources.append(SourceItem(title=f"{item.get('publisher', 'Kaynak')}: {item.get('title', 'Teyit Raporu')}", url=item.get("url")))
+        if serper_evidence:
+            for item in serper_evidence:
+                if item.get("url"):
+                    collected_sources.append(SourceItem(title=item.get("title", "Web Kaynağı"), url=item.get("url")))
+
+        existing_urls = {s.url for s in parsed_result.sources if s.url}
+        for src in collected_sources:
+            if src.url not in existing_urls:
+                parsed_result.sources.append(src)
+                existing_urls.add(src.url)
+
+        # Veritabanına da kaynakları eksiksiz JSON olarak kaydet
+        final_json_str = parsed_result.model_dump_json()
+
+        try:
+            conn = get_db_connection()
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO chats (user_id, message, response, model)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (request.user_id, request.text, final_json_str, 'gemini-2.0-flash')
+                )
+            conn.commit()
+        except Exception as db_err:
+            print(f"DB Error: {str(db_err)}")
+        finally:
+            if 'conn' in locals():
+                conn.close()
 
         return parsed_result
 
