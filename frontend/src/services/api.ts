@@ -82,3 +82,18 @@ export async function fetchHistory(userId: number = 1, options: VerifyOptions = 
     throw error;
   }
 }
+
+export async function checkApiHealth() {
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/health`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (response.ok) {
+      return await response.json();
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}

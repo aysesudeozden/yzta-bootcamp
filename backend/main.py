@@ -482,6 +482,30 @@ def get_admin_logs(admin_id: int = Depends(verify_admin_role)):
 
     return AdminLogsResponse(chats=chats_list)
 
+@app.get("/")
+def read_root():
+    return {"status": "ok", "service": "Fact-Check AI Orchestrator API", "version": "1.0.0"}
+
+@app.get("/api/health")
+def health_check():
+    db_status = "unknown"
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1")
+        conn.close()
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+
+    return {
+        "status": "healthy",
+        "gemini_api_key_configured": client is not None,
+        "fact_check_api_key_configured": bool(FACT_CHECK_API_KEY),
+        "serper_api_key_configured": bool(SERPER_API_KEY),
+        "database_status": db_status
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
