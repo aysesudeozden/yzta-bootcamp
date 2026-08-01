@@ -17,19 +17,24 @@ import requests
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env.local")
+load_dotenv(BASE_DIR.parent / ".env.local")
 load_dotenv(BASE_DIR.parent / ".env")
 
 api_key = os.getenv("GEMINI_API_KEY")
 
 client = genai.Client(api_key=api_key) if api_key else None
 
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "port": int(os.getenv("DB_PORT", "5432")),
-    "user": os.getenv("DB_USER", "admin"),
-    "password": os.getenv("DB_PASSWORD", "secretpassword"),
-    "dbname": os.getenv("DB_NAME", "bootcamp_db"),
-}
+def get_db_connection():
+    db_url = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL")
+    if db_url:
+        return psycopg2.connect(db_url)
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST", "localhost"),
+        port=int(os.getenv("DB_PORT", "5432")),
+        user=os.getenv("DB_USER", "admin"),
+        password=os.getenv("DB_PASSWORD", "secretpassword"),
+        dbname=os.getenv("DB_NAME", "bootcamp_db"),
+    )
 
 FACT_CHECK_API_KEY = os.getenv("FACT_CHECK_API_KEY")
 SERPER_API_KEY = os.getenv("SERPER_API_KEY")
@@ -180,7 +185,7 @@ def query_serper_search(claim: str) -> list:
     
 def verify_admin_role(admin_id: int):
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
     except psycopg2.OperationalError:
         raise HTTPException(status_code=503, detail="Veritabanı bağlantı hatası.")
 
@@ -199,7 +204,7 @@ def verify_admin_role(admin_id: int):
 @app.post("/api/login", response_model=LoginResponse)
 def login(request: LoginRequest):
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
     except psycopg2.OperationalError:
         raise HTTPException(status_code=503, detail="Veritabanına bağlanılamadı.")
 
@@ -234,7 +239,7 @@ def register(request: RegisterRequest):
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
     except psycopg2.OperationalError:
         raise HTTPException(status_code=503, detail="Veritabanına bağlanılamadı.")
 
@@ -343,7 +348,7 @@ async def verify_claim(request: ClaimRequest):
         gemini_duration = end_gemini - start_gemini
 
         try:
-            conn = psycopg2.connect(**DB_CONFIG)
+            conn = get_db_connection()
             with conn.cursor() as cur:
                 cur.execute(
                     """
@@ -378,7 +383,7 @@ async def verify_claim(request: ClaimRequest):
 @app.get("/api/history")
 def get_history(user_id: int = Query(...)):
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -415,7 +420,7 @@ def get_history(user_id: int = Query(...)):
 @app.get("/api/admin/logs", response_model=AdminLogsResponse)
 def get_admin_logs(admin_id: int = Depends(verify_admin_role)):
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
     except psycopg2.OperationalError:
         raise HTTPException(status_code=503, detail="Veritabanına bağlanılamadı.")
 

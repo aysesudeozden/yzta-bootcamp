@@ -70,8 +70,11 @@ export default function AdminLogsPage() {
 
       const fetchAllLogs = async () => {
         try {
-          setLoading(true);
-          const response = await fetch(`http://localhost:8000/api/admin/logs?admin_id=${parsedUser.id}`);
+          const user = JSON.parse(storedUser);
+          const adminId = user.id;
+
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || (typeof window !== "undefined" && window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api");
+          const response = await fetch(`${baseUrl}/admin/logs?admin_id=${adminId}`);
 
           if (!response.ok) {
             if (response.status === 403) {
@@ -329,9 +332,8 @@ export default function AdminLogsPage() {
             <button
               key={key}
               onClick={() => setActiveNavTab(key)}
-              className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
-                activeNavTab === key ? "bg-slate-900 dark:bg-slate-700 text-white shadow-2xs" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-              }`}
+              className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${activeNavTab === key ? "bg-slate-900 dark:bg-slate-700 text-white shadow-2xs" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                }`}
             >
               {label}
             </button>
