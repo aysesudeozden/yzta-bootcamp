@@ -160,3 +160,32 @@ bağlantılarla birlikte şeffaf biçimde raporlanır.
   - Üyelerin işleri bittikçe diğer ekip arkadaşlarına destek için hazır beklemesi (ör. database tarafında) iyi işlemiştir; bu yaklaşım devam ettirilecektir.
   - Sprint kapanışlarının ekipçe değerlendirilebilmesi için sprint raporu hazırlanması kararlaştırılmıştır.
   - Bir sonraki sprint'te ürünün canlıya alınmasına (deployment) ve arayüz tasarım iyileştirmelerine öncelik verilecektir.
+
+---
+
+# Sprint 3
+
+- **Sprint Notları**: Sprint adı "Final" olarak belirlenmiş olup 21 Temmuz – 31 Temmuz 2026 tarihleri arasında yürütülmüştür. Sprint hedefi; ürünün canlıya alınması, admin sayfasının yetkilendirme ve geliştirmelerinin tamamlanması, web search altyapısının geliştirilmesi, light/dark tema desteğinin eklenmesi ve kaynakların analiz sonuçlarında görüntülenmemesi sorununun giderilmesidir.
+
+- **Sprint içinde tamamlanması tahmin edilen puan**: 19 puan
+
+- **Puan tamamlama mantığı**: Yararlanılan kaynakların gözükmemesi sorunu (SCRUM-16: 3 puan), Admin sayfasına yetkisiz giriş sayfası (SCRUM-17: 1 puan), Light ve Dark Tema (SCRUM-19: 2 puan), Admin sayfası geliştirmeleri (SCRUM-20: 3 puan), webSearch'ün geliştirilmesi (SCRUM-21: 5 puan), Canlıya çıkma (SCRUM-22: 5 puan).
+
+- **Backlog düzeni ve Story seçimleri**: Sprint 2'de altyapısı tamamlanan ürünün son sprintinde; ürünün canlıya alınması (deployment) ve arayüz tasarım iyileştirmeleri önceliklendirilmiştir. Bu doğrultuda admin tarafının yetkilendirilmesi ve geliştirilmesi, light/dark tema desteği, web search geliştirmesi ve kaynak görüntüleme hatasının giderilmesi Sprint 3'e alınmıştır.
+
+  ![Jira Backlog](docs/sprint3/jira-backlog.png)
+
+- **Daily Scrum**: Daily Scrum toplantıları WhatsApp üzerinden asenkron olarak yürütülmeye devam etmiştir. Sprint boyunca 1 daily yapılmış olup ekip üyeleri; ürünün tamamının canlıya alındığını, admin tarafının canlıya alma sürecinin devam ettiğini, diğer yapıların entegrasyonu ile admin kısmının tamamlandığını ve kaynak sorununun çözülmeye çalışıldığını paylaşmıştır. Ekip, sprint boyunca sürekli birlikte ilerlediği ve her gün düzenli olarak iletişimde kaldığı için görev durumlarından birbirinden haberdar olmuştur.
+
+  ![Sprint 3 Daily](docs/sprint3/daily-1.png)
+
+- **Sprint board update**: Sprint sonunda tüm iş kalemleri Done durumuna alınmıştır:
+
+  ![Jira Sprint Board - Sprint Sonu](docs/sprint3/jira-backlog.png)
+
+- **Sprint Review**: Sprint'e alınan 19 puanlık iş kaleminin tamamı başarıyla tamamlanmıştır. Yararlanılan kaynakların analiz sonuçlarında gözükmemesi sorunu giderilmiş (SCRUM-16), admin sayfasına yetkisiz erişimi engelleyen giriş kontrolü eklenmiş (SCRUM-17) ve admin sayfası geliştirmeleri tamamlanmıştır (SCRUM-20). Kullanıcı deneyimini iyileştirmek amacıyla light ve dark tema desteği eklenmiş (SCRUM-19), web search altyapısı geliştirilmiş (SCRUM-21) ve ürün canlı ortama alınmıştır (SCRUM-22). Sprint Review katılımcıları: Buket Yurt, Sude Özden, Sedef Ülker, Feyza İrem Kart.
+
+- **Sprint Retrospective**:
+  - Ekibin sürekli birlikte çalışması ve gün içinde düzenli iletişim kurması sayesinde tek bir daily yapılmasına rağmen görev durumlarından herkesin haberdar olduğu görülmüş; bu iletişim tarzının verimli olduğuna karar verilmiştir.
+  - Canlıya alma sürecinin (deployment) parça parça değil ürünün tüm bileşenleri (admin dahil) için birlikte planlanmasının sonraki projelerde daha verimli olacağı değerlendirilmiştir.
+  - Bootcamp kapsamındaki son sprint olması nedeniyle, tüm sprintlerde alınan story'lerin başarıyla tamamlanmış olması ekip tarafından olumlu değerlendirilmiştir.
