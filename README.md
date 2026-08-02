@@ -1,4 +1,4 @@
-# 🔍 Doğrulama Asistanı (Fact-Checking Assistant)
+# 🔍 Fact-Check AI
 
 <div align="center">
 
@@ -18,16 +18,16 @@
 <table>
   <tr>
     <td align="center" width="160">
-      <a href="https://github.com/buketyurt">
-        <img src="https://github.com/buketyurt.png" width="90" height="90" style="border-radius:50%;" alt="Buket Yurt"/><br />
-        <sub><b>Buket Yurt</b></sub>
+      <a href="https://github.com/aysesudeozden">
+        <img src="https://github.com/aysesudeozden.png" width="90" height="90" style="border-radius:50%;" alt="Ayşe Sude Özden"/><br />
+        <sub><b>Ayşe Sude Özden</b></sub>
       </a><br />
       <small>Product Owner / Dev</small>
     </td>
     <td align="center" width="160">
-      <a href="https://github.com/aysesudeozden">
-        <img src="https://github.com/aysesudeozden.png" width="90" height="90" style="border-radius:50%;" alt="Ayşe Sude Özden"/><br />
-        <sub><b>Ayşe Sude Özden</b></sub>
+      <a href="https://github.com/buketyurt">
+        <img src="https://github.com/buketyurt.png" width="90" height="90" style="border-radius:50%;" alt="Buket Yurt"/><br />
+        <sub><b>Buket Yurt</b></sub>
       </a><br />
       <small>Scrum Master / Dev</small>
     </td>
@@ -54,19 +54,24 @@
 
 # 📌 Ürün İle İlgili Bilgiler
 
-## 🏷️ Takım İsmi
-**Parlayan Yıldızlar Takımı**
-
-## 💡 Ürün İsmi
-**Doğrulama Asistanı**
+| 🏷️ Takım İsmi | 💡 Ürün İsmi | 🧠 Ajan Mimarisi |
+| :---: | :---: | :---: |
+| **Parlayan Yıldızlar Takımı** | **Fact-Check AI** | **Gemini 3.6 Multi-Agent** |
 
 ---
 
-## 📝 Ürün Açıklaması
+### 📝 Ürün Açıklaması ve Çalışma Mantığı
 
-**Doğrulama Asistanı**, dijital ekosistemdeki şüpheli haberleri, sosyal medya paylaşımlarını ve iddiaları otonom yapay zeka ajanlarıyla saniyeler içinde analiz eden gerçek zamanlı bir **fact-checking** uygulamasıdır. 
+**Fact-Check AI**, şüpheli haberleri, sosyal medya paylaşımlarını ve iddiaları otonom yapay zeka ajanlarıyla saniyeler içinde analiz eden gerçek zamanlı bir doğrulama (**fact-checking**) uygulamasıdır.
 
-Kullanıcının girdiği karmaşık iddia metinleri, **Multi-Agent (Çoklu Ajan)** mimarisiyle kontrol edilebilir alt iddialara ayrıştırılır; canlı web ve teyit veritabanları taranarak bulgular iddialarla çapraz analize tabi tutulur ve nihai güven skoru, yönetici özeti ile kanıt raporu halinde kullanıcıya sunulur. Tüm sonuçlar, doğrulama kaynaklarına (**grounding links**) doğrudan bağlantılarla şeffaf biçimde raporlanır.
+```
+📥 1. Metin Girdisi ──► 🧩 2. Alt İddia Ayrıştırması ──► 🌐 3. Canlı Web Taraması ──► ⚖️ 4. Güven Skoru & Raporlama
+```
+
+- 🧩 **1. Alt İddia Ayrıştırması (Ayrıştırma Ajanı):** Kullanıcının girdiği karmaşık metin, kontrol edilebilir atomik iddialara ayrıştırılır.
+- 🌐 **2. Canlı Teyit Taraması (Arama Ajanı):** Google Fact Check API ve Serper API entegrasyonuyla canlı web ve teyit veritabanları taranır.
+- 🔬 **3. Çapraz Kanıt Analizi (Karşılaştırma Ajanı):** Elde edilen internet bulguları ile iddialar anlamsal ve olgusal çapraz teste tabi tutulur.
+- ⚖️ **4. Güven Skoru & Raporlama (Skorlama Ajanı):** Nihai güven skoru (0-100), yönetici özeti ve tıklanabilir doğrulama kaynakları (**grounding links**) şeffaf biçimde sunulur.
 
 ---
 
@@ -119,16 +124,39 @@ flowchart TD
 
 ---
 
-## ✨ Ürün Özellikleri
+## ✨ Öne Çıkan Ürün Özellikleri
 
-- 🧩 **Alt İddia Ayrıştırması:** Karmaşık metinleri doğrulanabilir atomik iddialara ayırma (Ayrıştırma Ajanı)
-- 🌐 **Canlı Web Taraması:** Google Fact Check Tools API & Serper API entegrasyonuyla anlık arama (Arama Ajanı)
-- 🔬 **Çapraz Doğrulama:** Bulunan kanıtlar ile iddiaların anlamsal ve mantıksal çapraz analizi (Karşılaştırma Ajanı)
-- ⚖️ **Nihai Güven Skoru & Rapor:** 0-100 arası güven göstergesi, yönetici özeti ve sentez raporu (Skorlama Ajanı)
-- 📊 **Şeffaf Kaynaklandırma:** Analiz sonuçlarında doğrudan doğrulanmış kaynak bağlantıları (grounding links)
-- 🔐 **Kullanıcı Kayıt & Giriş:** E-posta ve şifre ile güvenli oturum yönetimi (Bcrypt şifreleme & Neon.tech Cloud PostgreSQL)
-- 📜 **Analiz Geçmişi:** Yapılan araştırmaların veritabanına kaydedilmesi ve kullanıcı geçmişinde listelenmesi
-- ⚙️ **Yönetim Paneli (Admin):** Yetkilendirilmiş admin girişi, kullanıcı sorgu loglarının ve sistem hareketlerinin izlenmesi
+<table width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🤖 Otonom Ajan & Analiz Yetenekleri</h3>
+      <ul>
+        <li>🧩 <b>Atomik Alt İddia Ayrıştırması:</b> Girdi metni, <i>Decomposition Agent</i> tarafından anlamsal parçalara ayrılarak her iddia bağımsız teste tabi tutulur.</li>
+        <li>🌐 <b>Canlı Teyit & Web Arama:</b> <i>Search Orchestration Agent</i>, Google Fact Check Tools API ve Serper API ile canlı internet taraması yapar.</li>
+        <li>🔬 <b>Çapraz Kanıt Analizi:</b> <i>Cross-Verification Agent</i>, web bulgularını iddialarla anlamsal ve mantıksal olarak karşılaştırır.</li>
+        <li>⚖️ <b>Sentez & Güven Skoru (0-100):</b> <i>Scoring Agent</i>, tüm bulguları sentezleyerek güven skoru, yönetici özeti ve kanıt raporu üretir.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>⚡ Platform, Güvenlik & Kullanıcı Deneyimi</h3>
+      <ul>
+        <li>📊 <b>Şeffaf Grounding Bağlantıları:</b> Analiz çıktısında tüm iddiaların dayandırıldığı doğrudan web doğrulama kaynakları listelenir.</li>
+        <li>🔐 <b>Güvenli Kullanıcı Yönetimi:</b> Bcrypt şifreleme ile e-posta/şifre tabanlı yetkilendirme ve güvenli oturum yönetimi.</li>
+        <li>📜 <b>Analiz Geçmişi & Veri Kaydı:</b> Yapılan araştırmaların Neon.tech Cloud PostgreSQL veritabanına kaydedilmesi ve kullanıcı detay ekranı.</li>
+        <li>⚙️ <b>Yönetim Paneli (Admin Console):</b> Yöneticiler için canlı sistem logları, kullanıcı sorguları izleme ve yetkilendirme paneli.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<div align="center">
+
+![Multi-Agent Pipeline](https://img.shields.io/badge/Ajan_Mimarisi-Multi--Agent_Pipeline-FF6F00?style=for-the-badge&logo=cpu&logoColor=white)
+![Realtime Search](https://img.shields.io/badge/Arama-Google_FactCheck_%26_Serper-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![Cloud DB](https://img.shields.io/badge/Veritaban%C4%B1-Neon.tech_PostgreSQL-00E599?style=for-the-badge&logo=neon&logoColor=black)
+![Admin Panel](https://img.shields.io/badge/Y%C3%B6netim-Admin_Logging_%26_Control-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+
+</div>
 
 ---
 
