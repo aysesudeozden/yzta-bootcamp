@@ -1,55 +1,170 @@
-# Takım İsmi
+# 🔍 Doğrulama Asistanı (Fact-Checking Assistant)
 
-Parlayan Yıldızlar Takımı
+<div align="center">
 
-# Ürün İle İlgili Bilgiler
+![YZTA Bootcamp](https://img.shields.io/badge/YZTA-Yapay_Zeka_Tasar%C4%B1m_Akademisi-blueviolet?style=for-the-badge)
+![Takım](https://img.shields.io/badge/Tak%C4%B1m-Parlayan_Y%C4%B1ld%C4%B1zlar_Tak%C4%B1m%C4%B1-gold?style=for-the-badge)
+![License](https://img.shields.io/badge/Lisans-MIT-green?style=for-the-badge)
 
-## Takım Elemanları
+**Şüpheli haberleri, sosyal medya paylaşımlarını ve iddiaları otonom yapay zeka ajanlarıyla saniyeler içinde analiz eden gerçek zamanlı doğrulama platformu.**
 
-- Buket Yurt: Team Member/Developer <!-- rolünüzü güncelleyin (Product Owner / Scrum Master / Developer) -->
-- Sude Ö.: Team Member/Developer <!-- ad-soyad ve rolü güncelleyin -->
-- Sedef: Team Member/Developer <!-- ad-soyad ve rolü güncelleyin -->
-- Feyza İrem: Team Member/Developer <!-- ad-soyad ve rolü güncelleyin -->
+[![Jira Backlog](https://img.shields.io/badge/Jira-Product_Backlog-0052CC?style=for-the-badge&logo=jira&logoColor=white)](https://buketyurt.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog)
+[![YouTube Demo](https://img.shields.io/badge/YouTube-%C3%9Cr%C3%BCn_Tan%C4%B1t%C4%B1m_Videosu-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/3YMe8Pitcwo)
 
-## Ürün İsmi
+---
 
-Doğrulama Asistanı
+### 👥 Ekip Üyeleri (Parlayan Yıldızlar Takımı)
 
-## Ürün Açıklaması
+<table>
+  <tr>
+    <td align="center" width="160">
+      <a href="https://github.com/buketyurt">
+        <img src="https://github.com/buketyurt.png" width="90" height="90" style="border-radius:50%;" alt="Buket Yurt"/><br />
+        <sub><b>Buket Yurt</b></sub>
+      </a><br />
+      <small>Product Owner / Dev</small>
+    </td>
+    <td align="center" width="160">
+      <a href="https://github.com/aysesudeozden">
+        <img src="https://github.com/aysesudeozden.png" width="90" height="90" style="border-radius:50%;" alt="Ayşe Sude Özden"/><br />
+        <sub><b>Ayşe Sude Özden</b></sub>
+      </a><br />
+      <small>Scrum Master / Dev</small>
+    </td>
+    <td align="center" width="160">
+      <a href="https://github.com/sedefulker">
+        <img src="https://github.com/sedefulker.png" width="90" height="90" style="border-radius:50%;" alt="Sedef Ülker"/><br />
+        <sub><b>Sedef Ülker</b></sub>
+      </a><br />
+      <small>Developer</small>
+    </td>
+    <td align="center" width="160">
+      <a href="https://github.com/Floemsyza">
+        <img src="https://github.com/Floemsyza.png" width="90" height="90" style="border-radius:50%;" alt="Feyza İrem Kart"/><br />
+        <sub><b>Feyza İrem Kart</b></sub>
+      </a><br />
+      <small>Developer</small>
+    </td>
+  </tr>
+</table>
 
-Doğrulama Asistanı, şüpheli haberleri, sosyal medya paylaşımlarını ve iddiaları
-otonom yapay zeka ajanlarıyla saniyeler içinde analiz eden gerçek zamanlı bir
-doğrulama (fact-checking) uygulamasıdır. Kullanıcının girdiği metin,
-multi-agent mimarisiyle kontrol edilebilir alt iddialara ayrıştırılır; canlı
-web ve bilimsel veritabanları taranarak bulgular iddialarla çapraz analize
-tabi tutulur ve nihai güven skoru, yönetici özeti ile kanıt raporu halinde
-kullanıcıya sunulur. Tüm sonuçlar, doğrulama kaynaklarına (grounding links)
-bağlantılarla birlikte şeffaf biçimde raporlanır.
+</div>
 
-## Ürün Özellikleri
+---
 
-- Metni kontrol edilebilir alt iddialara bölme (Ayrıştırma Ajanı)
-- Canlı web ve bilimsel veritabanlarında tarama (Arama Ajanı)
-- Bulgular ile iddiaların çapraz analizi (Karşılaştırma Ajanı)
-- Nihai güven skoru ve kanıt raporu sentezi (Skorlama Ajanı)
-- İddia kırılımları, yönetici özeti ve doğrulama kaynakları (grounding links) içeren sonuç ekranı
-- E-posta/şifre ile giriş; Google ve GitHub ile devam etme seçenekleri
-- Eski araştırmalara belli bir süre içinde tekrar ulaşabilme 
+# 📌 Ürün İle İlgili Bilgiler
 
-## Hedef Kitle
+## 🏷️ Takım İsmi
+**Parlayan Yıldızlar Takımı**
 
-- Sosyal medya kullanıcıları
-- Gazeteciler ve içerik üreticileri
-- Öğrenciler ve akademisyenler
-- Doğru bilgiye hızlı ulaşmak isteyen 15-65 yaş arası tüm internet kullanıcıları
+## 💡 Ürün İsmi
+**Doğrulama Asistanı**
 
-## Product Backlog URL
+---
 
-[Jira Backlog Board](https://buketyurt.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog)
+## 📝 Ürün Açıklaması
 
-## Ürün Tanıtım Videosu
+**Doğrulama Asistanı**, dijital ekosistemdeki şüpheli haberleri, sosyal medya paylaşımlarını ve iddiaları otonom yapay zeka ajanlarıyla saniyeler içinde analiz eden gerçek zamanlı bir **fact-checking** uygulamasıdır. 
 
-[Doğrulama Asistanı - Tanıtım Videosu](https://youtu.be/3YMe8Pitcwo)
+Kullanıcının girdiği karmaşık iddia metinleri, **Multi-Agent (Çoklu Ajan)** mimarisiyle kontrol edilebilir alt iddialara ayrıştırılır; canlı web ve teyit veritabanları taranarak bulgular iddialarla çapraz analize tabi tutulur ve nihai güven skoru, yönetici özeti ile kanıt raporu halinde kullanıcıya sunulur. Tüm sonuçlar, doğrulama kaynaklarına (**grounding links**) doğrudan bağlantılarla şeffaf biçimde raporlanır.
+
+---
+
+## 📐 Sistem ve Multi-Agent Mimari Akışı
+
+```mermaid
+flowchart TD
+    subgraph Client["💻 İstemci Katmanı (Frontend)"]
+        UI["🖥️ Next.js 16 UI / React 19"]
+        AuthUI["🔐 Kullanıcı & Admin Paneli"]
+    end
+
+    subgraph Server["⚡ Sunucu Katmanı (FastAPI Backend)"]
+        API["🚀 FastAPI REST Endpoints"]
+        AuthManager["🔑 Bcrypt & Auth Manager"]
+    end
+
+    subgraph Pipeline["🤖 Otonom Multi-Agent Boru Hattı"]
+        Decomposer["🧩 1. Ayrıştırma Ajanı (Decomposition Agent)"]
+        Searcher["🌐 2. Arama Ajanı (Search Orchestration Agent)"]
+        Verifier["🔬 3. Çapraz Analiz Ajanı (Cross-Verification Agent)"]
+        Scorer["⚖️ 4. Skorlama & Sentez Ajanı (Synthesis & Scoring Agent)"]
+    end
+
+    subgraph External["🔎 Dış Veri & AI Servisleri"]
+        GFC["🔍 Google Fact Check Tools API"]
+        Serper["⚡ Serper Live Web Search API"]
+        Gemini["🧠 Google Gemini 3.6 Flash LLM"]
+    end
+
+    subgraph Database["💾 Veri Katmanı"]
+        Postgres[("🐘 PostgreSQL / Neon.tech Serverless DB & Docker")]
+    end
+
+    UI -->|1. İddia Metni Gönder| API
+    API --> AuthManager
+    AuthManager --> Postgres
+    API --> Decomposer
+    Decomposer --> Searcher
+    Searcher -->|Sorgula| GFC
+    Searcher -->|Canlı Arama| Serper
+    GFC --> Verifier
+    Serper --> Verifier
+    Verifier --> Gemini
+    Gemini --> Scorer
+    Scorer -->|2. Yapılandırılmış JSON Analiz| API
+    API -->|3. Sorgu & Yanıt Kaydet| Postgres
+    API -->|4. Şeffaf Kanıt Raporu & Güven Skoru| UI
+```
+
+---
+
+## ✨ Ürün Özellikleri
+
+- 🧩 **Alt İddia Ayrıştırması:** Karmaşık metinleri doğrulanabilir atomik iddialara ayırma (Ayrıştırma Ajanı)
+- 🌐 **Canlı Web Taraması:** Google Fact Check Tools API & Serper API entegrasyonuyla anlık arama (Arama Ajanı)
+- 🔬 **Çapraz Doğrulama:** Bulunan kanıtlar ile iddiaların anlamsal ve mantıksal çapraz analizi (Karşılaştırma Ajanı)
+- ⚖️ **Nihai Güven Skoru & Rapor:** 0-100 arası güven göstergesi, yönetici özeti ve sentez raporu (Skorlama Ajanı)
+- 📊 **Şeffaf Kaynaklandırma:** Analiz sonuçlarında doğrudan doğrulanmış kaynak bağlantıları (grounding links)
+- 🔐 **Kullanıcı Kayıt & Giriş:** E-posta ve şifre ile güvenli oturum yönetimi (Bcrypt şifreleme & Neon.tech Cloud PostgreSQL)
+- 📜 **Analiz Geçmişi:** Yapılan araştırmaların veritabanına kaydedilmesi ve kullanıcı geçmişinde listelenmesi
+- ⚙️ **Yönetim Paneli (Admin):** Yetkilendirilmiş admin girişi, kullanıcı sorgu loglarının ve sistem hareketlerinin izlenmesi
+
+---
+
+## 🎯 Hedef Kitle
+
+- 📱 **Sosyal Medya Kullanıcıları:** Günlük haber akışındaki bilgi kirliliğini ve dezenformasyonu teyit etmek isteyenler.
+- 📰 **Gazeteciler ve İçerik Üreticileri:** Haberlerini yayınlamadan önce hızlı fakt-kontrolü yapmak isteyen profesyoneller.
+- 🎓 **Öğrenciler ve Akademisyenler:** Araştırmalarında doğrulanmış kaynaklara hızlıca ulaşmak isteyenler.
+- 🌐 **Doğru Bilgiye Hızlı Ulaşmak İsteyen Herkes:** 15-65 yaş arası tüm dijital okuryazarlar.
+
+---
+
+## 💻 Teknoloji Yığını (Tech Stack)
+
+| Katman | Teknolojiler & Rozetler |
+| :--- | :--- |
+| **Frontend** | ![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white) ![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white) |
+| **Backend** | ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white) ![Python](https://img.shields.io/badge/Python_3.12-3776AB?style=for-the-badge&logo=python&logoColor=white) ![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=for-the-badge&logo=pydantic&logoColor=white) ![Uvicorn](https://img.shields.io/badge/Uvicorn-499848?style=for-the-badge&logo=uvicorn&logoColor=white) |
+| **Yapay Zeka** | ![Google Gemini](https://img.shields.io/badge/Gemini_3.6_Flash-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white) ![Multi-Agent](https://img.shields.io/badge/Orchestrator-Multi--Agent-FF6F00?style=for-the-badge&logo=openai&logoColor=white) |
+| **Veritabanı & Cloud** | ![Neon.tech](https://img.shields.io/badge/Neon.tech-Serverless_PostgreSQL-00E599?style=for-the-badge&logo=neon&logoColor=black) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) |
+| **Veri & Teyit API'leri** | ![Google Fact Check](https://img.shields.io/badge/Google_Fact_Check_API-4285F4?style=for-the-badge&logo=google&logoColor=white) ![Serper API](https://img.shields.io/badge/Serper_Web_Search-00C853?style=for-the-badge&logo=google-search&logoColor=white) |
+| **Proje Yönetimi** | ![Jira](https://img.shields.io/badge/Jira_Software-0052CC?style=for-the-badge&logo=jira&logoColor=white) ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white) |
+
+---
+
+## 🚀 Geliştirme ve Canlıya Alma Süreci (Deployment Lifecycle)
+
+- 🐳 **Yerel Geliştirme (Local Development):** Projenin ilk aşamalarında PostgreSQL veritabanı ve bağımlılıklar **Docker & Docker Compose** ile konteynerize edilerek yerel ortamda izolasyon sağlandı ve geliştirme süreçleri yürütüldü.
+- ☁️ **Canlıya Alma (Production Deployment):** Ürün canlıya alınırken yüksek erişilebilirlik ve kesintisiz bulut entegrasyonu amacıyla veritabanı **Neon.tech Serverless PostgreSQL** mimarisine taşındı, uygulama servisleri canlı ortama başarıyla yaygınlaştırıldı.
+
+---
+
+## 🔗 Product Backlog URL & Tanıtım Videosu
+
+- 📋 **Product Backlog URL:** [![Jira Board](https://img.shields.io/badge/Jira-Product_Backlog-0052CC?style=flat-square&logo=jira&logoColor=white)](https://buketyurt.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog)
+- 🎬 **Ürün Tanıtım Videosu:** [![YouTube Video](https://img.shields.io/badge/YouTube-Ürün_Tanıtım_Videosu-FF0000?style=flat-square&logo=youtube&logoColor=white)](https://youtu.be/3YMe8Pitcwo)
 
 ---
 
