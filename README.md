@@ -47,6 +47,10 @@ bağlantılarla birlikte şeffaf biçimde raporlanır.
 
 [Jira Backlog Board](https://buketyurt.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog)
 
+## Ürün Tanıtım Videosu
+
+[Doğrulama Asistanı - Tanıtım Videosu](https://youtu.be/3YMe8Pitcwo)
+
 ---
 
 # Sprint 1
